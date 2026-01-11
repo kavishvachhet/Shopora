@@ -164,7 +164,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Your Name - your.email@example.com
 
-Project Link: [https://github.com/yourusername/shopora](https://github.com/yourusername/shopora)
+Project Link: [https://github.com/Kavish_Vachheta/shopora](https://github.com/kavishvachhet/Shopora)
 
 ## Acknowledgments
 
