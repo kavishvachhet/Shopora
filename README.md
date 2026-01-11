@@ -162,7 +162,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-Your Name - your.email@example.com
+Kavish Vachheta - kavishkumar.v@ahduni.edu.in
 
 Project Link: [https://github.com/Kavish_Vachheta/shopora](https://github.com/kavishvachhet/Shopora)
 
@@ -174,4 +174,4 @@ Project Link: [https://github.com/Kavish_Vachheta/shopora](https://github.com/ka
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by [Kavish Vachheta]
