@@ -29,12 +29,11 @@ A full-featured e-commerce application that provides a seamless shopping experie
 
 ## Technology Stack
 
-*Add your tech stack here, for example:*
-- **Frontend**: React.js / Angular / Vue.js
-- **Backend**: Node.js / Python / Java
-- **Database**: MongoDB / MySQL / PostgreSQL
-- **Authentication**: JWT / OAuth
-- **Email Service**: SendGrid / Nodemailer
+- **Frontend**: EJS (Embedded JavaScript templating)
+- **Backend**: Node.js with Express.js
+- **Database**: MongoDB
+- **Authentication**: JWT, Bcrypt, cookies
+- **Email Service**: Nodemailer
 
 ## Installation
 
