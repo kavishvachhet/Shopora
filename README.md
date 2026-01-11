@@ -46,8 +46,8 @@ A full-featured e-commerce application that provides a seamless shopping experie
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/shopora.git
-cd shopora
+git clone https://github.com/kavishvachhet/Shopora
+cd Shopora
 ```
 
 2. Install dependencies
@@ -55,12 +55,7 @@ cd shopora
 npm install
 ```
 
-3. Configure environment variables
-```bash
-cp .env.example .env
-```
-
-Edit `.env` file with your configuration:
+3. Add `.env` file with your configuration:
 ```
 DATABASE_URL=your_database_url
 JWT_SECRET=your_jwt_secret
@@ -69,12 +64,8 @@ EMAIL_USER=your_email
 EMAIL_PASSWORD=your_email_password
 ```
 
-4. Run database migrations
-```bash
-npm run migrate
-```
 
-5. Start the application
+4. Start the application
 ```bash
 npm start
 ```
