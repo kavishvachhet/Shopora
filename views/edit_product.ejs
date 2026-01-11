@@ -1,0 +1,146 @@
+<%- include('./partials/header') %>
+
+<% if (success && success.length > 0) { %>
+  <div class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-blue-500">
+    <span class="text-white"><%= success %></span>
+  </div>
+<% } %>
+
+<% if (error && error.length > 0) { %>
+  <div class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-red-500">
+    <span class="text-white"><%= error %></span>
+  </div>
+<% } %>
+
+<div class="min-h-screen flex flex-col">
+  <div class="container px-10 py-20 flex flex-grow">
+    
+    <!-- SIDEBAR -->
+    <div class="w-[25%] flex flex-col">
+      <a class="mb-2 font-medium" href="/owner/products">← All Products</a>
+      <a class="mb-2 font-medium" href="/owner/admin">Create New Product</a>
+    </div>
+
+    <!-- MAIN -->
+    <main class="w-3/4 bg-white p-8 shadow ml-4 rounded">
+      <h2 class="text-xl font-bold mb-6">Edit Product</h2>
+
+      <form autocomplete="off"
+            action="/owner/products/edit/<%= product._id %>"
+            method="POST"
+            enctype="multipart/form-data">
+
+        <!-- PRODUCT DETAILS -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-2">Product Details</h3>
+
+          <div class="mb-4">
+            <label class="block mb-2 font-medium">Current Product Image</label>
+
+            <% if (product.image) { %>
+                <img 
+                src="data:image/jpeg;base64,<%= product.image.toString('base64') %>"
+                class="h-32 mb-3 rounded border"
+                alt="Current Image"
+                >
+            <% } else { %>
+                <p class="text-gray-400 mb-3">No image uploaded</p>
+            <% } %>
+
+            <label class="block mb-2 font-medium">Change Image (optional)</label>
+            <input name="image" type="file" class="py-2 px-4 rounded">
+            </div>
+
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <input name="name" type="text"
+                   value="<%= product.name %>"
+                   placeholder="Product Name"
+                   class="border p-2 rounded w-full" required>
+
+            <input name="price" type="number"
+                   value="<%= product.price %>"
+                   placeholder="Product Price"
+                   class="border p-2 rounded w-full" required>
+
+            <input name="discount" type="number"
+                   value="<%= product.discount %>"
+                   placeholder="Discount (%)"
+                   class="border p-2 rounded w-full">
+          </div>
+
+          <textarea name="description" rows="4"
+                    class="border p-2 rounded w-full"
+                    placeholder="Product Description"><%= product.description %></textarea>
+        </div>
+
+        <!-- INVENTORY & CATEGORY -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-2">Inventory & Category</h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            <input name="stock" type="number"
+                   value="<%= product.stock %>"
+                   placeholder="Stock Quantity"
+                   class="border p-2 rounded w-full">
+
+            <input name="brand" type="text"
+                   value="<%= product.brand %>"
+                   placeholder="Brand"
+                   class="border p-2 rounded w-full">
+
+            <input name="category" type="text"
+                   value="<%= product.category %>"
+                   placeholder="Category"
+                   class="border p-2 rounded w-full">
+
+            <input name="subcategory" type="text"
+                   value="<%= product.subcategory %>"
+                   placeholder="Subcategory"
+                   class="border p-2 rounded w-full">
+          </div>
+        </div>
+
+        <!-- PANEL DETAILS -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-2">Panel Details</h3>
+
+          <div class="grid grid-cols-2 gap-4">
+            <input name="bgcolor" type="text"
+                   value="<%= product.bgcolor %>"
+                   placeholder="Background Color"
+                   class="border p-2 rounded w-full">
+
+            <input name="panelcolor" type="text"
+                   value="<%= product.panelcolor %>"
+                   placeholder="Panel Color"
+                   class="border p-2 rounded w-full">
+
+            <input name="textcolor" type="text"
+                   value="<%= product.textcolor %>"
+                   placeholder="Text Color"
+                   class="border p-2 rounded w-full">
+          </div>
+        </div>
+
+        <!-- RATING -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-2">Rating</h3>
+
+          <input name="rating" type="number" step="0.1" min="0" max="5"
+                 value="<%= product.rating %>"
+                 placeholder="Rating (0–5)"
+                 class="border p-2 rounded w-full">
+        </div>
+
+        <!-- SUBMIT -->
+        <input
+          class="px-6 py-2 rounded bg-indigo-600 text-white font-semibold cursor-pointer hover:bg-indigo-700 transition"
+          type="submit"
+          value="Update Product">
+      </form>
+    </main>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

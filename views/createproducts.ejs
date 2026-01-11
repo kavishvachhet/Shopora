@@ -1,0 +1,109 @@
+<%- include('./partials/header') %>
+
+<% if(success && success.length > 0){ %>
+    <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-blue-500">
+        <span class="inline-block mt-1 mb-1 text-white">
+            <%= success %>
+        </span>
+    </div>
+<% } %>
+
+<% if(error && error.length > 0){ %>
+    <div class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-red-500">
+        <span class="inline-block mt-1 mb-1 text-white">
+            <%= error %>
+        </span>
+    </div>
+<% } %>
+
+<div class="min-h-screen flex flex-col">
+    <div class="container px-10 py-20 flex flex-grow">
+        <div class="w-[25%] flex h-screen flex-col items-start">
+            <div class="flex flex-col">
+                <a class="block w-fit mb-2" href="/owner/products">All Products</a>
+                <!-- <a class="block w-fit mb-2" href="/products/create">Create new product</a> -->
+            </div>
+        </div>
+
+        <main class="w-3/4 bg-white p-8 shadow ml-4">
+            <h2 class="text-xl font-bold mb-4">Create New Product</h2>
+
+            <form autocomplete="off" action="/products/create" method="post" enctype="multipart/form-data">
+
+                <!-- PRODUCT DETAILS -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Product Details</h3>
+
+                    <div class="mb-4">
+                        <label class="block mb-2 font-medium">Product Image</label>
+                        <input name="image" type="file" class="py-2 px-4 rounded">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <input name="name" type="text" placeholder="Product Name"
+                            class="border p-2 rounded w-full" required>
+
+                        <input name="price" type="number" placeholder="Product Price"
+                            class="border p-2 rounded w-full" required>
+
+                        <input name="discount" type="number" placeholder="Discount (%)"
+                            class="border p-2 rounded w-full">
+                    </div>
+
+                    <textarea name="description" rows="4"
+                        placeholder="Product Description"
+                        class="border p-2 rounded w-full"></textarea>
+                </div>
+
+                <!-- INVENTORY & CATEGORY -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Inventory & Category</h3>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <input name="stock" type="number" placeholder="Stock Quantity"
+                            class="border p-2 rounded w-full">
+
+                        <input name="brand" type="text" placeholder="Brand"
+                            class="border p-2 rounded w-full">
+
+                        <input name="category" type="text" placeholder="Category"
+                            class="border p-2 rounded w-full">
+
+                        <input name="subcategory" type="text" placeholder="Subcategory"
+                            class="border p-2 rounded w-full">
+                    </div>
+                </div>
+
+                <!-- PANEL DETAILS -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Panel Details</h3>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <input name="bgcolor" type="text" placeholder="Background Color"
+                            class="border p-2 rounded w-full">
+
+                        <input name="panelcolor" type="text" placeholder="Panel Color"
+                            class="border p-2 rounded w-full">
+
+                        <input name="textcolor" type="text" placeholder="Text Color"
+                            class="border p-2 rounded w-full">
+                    </div>
+                </div>
+
+                <!-- RATING -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Rating</h3>
+
+                    <input name="rating" type="number" step="0.1" min="0" max="5"
+                        placeholder="Rating (0–5)"
+                        class="border p-2 rounded w-full">
+                </div>
+
+                <input class="px-5 py-2 rounded bg-blue-500 text-white cursor-pointer"
+                    type="submit" value="Create New Product">
+            </form>
+        </main>
+    </div>
+</div>
+
+<%- include('./partials/footer') %>

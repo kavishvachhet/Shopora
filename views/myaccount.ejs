@@ -1,0 +1,129 @@
+<%- include('./partials/header') %>
+
+<div class="w-full min-h-screen flex justify-center items-start bg-gray-100 pt-8">
+
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-[400px] relative">
+
+    <!-- ✅ Flash Messages -->
+    <% if (error && error.length > 0) { %>
+      <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md mb-4">
+        <%= error %>
+      </div>
+    <% } else if (success && success.length > 0) { %>
+      <div class="bg-green-100 text-green-700 px-4 py-2 rounded-md mb-4">
+        <%= success %>
+      </div>
+    <% } %>
+
+    <!-- ✅ Profile Section -->
+    <div class="flex items-start gap-4 mb-6">
+      <div class="relative">
+        <% if (user.image && user.image.length > 1) { %>
+          <!-- Profile Image -->
+          <img 
+            id="profileImage"
+            src="data:image/jpeg;base64,<%= user.image.toString('base64') %>" 
+            alt="Profile Picture" 
+            class="w-24 h-24 rounded-full object-cover shadow-md cursor-pointer border-4 border-blue-400"
+          >
+        <% } else { %>
+          <!-- Fallback: First Letter of Name -->
+          <div 
+            id="profileImage"
+            class="w-24 h-24 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-4xl font-bold shadow-md cursor-pointer border-4 border-blue-300"
+          >
+            <%= user.fullname.charAt(0).toUpperCase() %>
+          </div>
+        <% } %>
+
+        <!-- ✅ Dropdown Menu -->
+        <div
+          id="optionsMenu"
+          class="absolute left-0 mt-2 bg-white border rounded-lg shadow-lg w-40 hidden z-10 text-center"
+        >
+          <!-- Upload Form -->
+          <form
+            action="/upload-image"
+            method="POST"
+            enctype="multipart/form-data"
+            class="border-b"
+          >
+            <label
+              for="imageUpload"
+              class="block py-2 px-4 cursor-pointer hover:bg-gray-100"
+            >
+              Change Photo
+            </label>
+            <input
+              type="file"
+              name="image"
+              id="imageUpload"
+              class="hidden"
+              onchange="this.form.submit()"
+            />
+          </form>
+
+          <!-- Remove Form -->
+          <form action="/remove-image" method="POST">
+            <button
+              type="submit"
+              class="block w-full text-red-500 py-2 px-4 hover:bg-gray-100"
+            >
+              Remove Photo
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ✅ User Info -->
+      <div class="flex-1 text-left">
+        <h2 class="text-2xl font-semibold text-gray-800"><%= user.fullname %></h2>
+        <p class="text-gray-600 mt-1"><%= user.email %></p>
+        <% if (user.contact) { %>
+          <p class="text-gray-600 mt-1">📞 <%= user.contact %></p>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ✅ Quick Actions (Orders & Wishlist) -->
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <a href="/cart" class="flex flex-col items-center justify-center px-4 py-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+        <span class="text-3xl mb-1">📦</span>
+        <span class="text-sm font-medium text-gray-700">My Orders</span>
+      </a>
+      <a href="/wishlist" class="flex flex-col items-center justify-center px-4 py-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+        <span class="text-3xl mb-1">❤️</span>
+        <span class="text-sm font-medium text-gray-700">Wishlist</span>
+      </a>
+    </div>
+
+    <!-- ✅ Navigation -->
+    <div class="flex flex-col gap-3">
+      <a href="/shop" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-center">
+        Go to Shop
+      </a>
+      <a href="/users/logout" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 text-center">
+        Logout
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ✅ JS for Dropdown -->
+<script>
+  const profileImage = document.getElementById('profileImage');
+  const optionsMenu = document.getElementById('optionsMenu');
+
+  profileImage.addEventListener('click', () => {
+    optionsMenu.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!profileImage.contains(e.target) && !optionsMenu.contains(e.target)) {
+      optionsMenu.classList.add('hidden');
+    }
+  });
+</script>
+
+<%- include('./partials/footer') %>

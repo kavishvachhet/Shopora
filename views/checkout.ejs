@@ -1,0 +1,136 @@
+<%- include('./partials/header') %>
+
+<div class="h-10"></div>
+
+<div class="w-full min-h-screen bg-[#F8F9FA] pb-20 px-4 md:px-16">
+  <div class="max-w-6xl mx-auto">
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+      <div class="lg:col-span-7 space-y-8">
+        
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                <i class="ri-map-pin-2-line text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">Delivery Address</h2>
+          </div>
+
+          <form action="/placeorder" method="POST" id="checkout-form" class="space-y-5">
+            <div class="group">
+              <label class="block text-sm font-semibold text-gray-600 mb-2 group-focus-within:text-indigo-600">Full Street Address</label>
+              <textarea
+                name="address"
+                required
+                rows="3"
+                placeholder="e.g. 402, Sunshine Residency, Park Street"
+                class="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all resize-none bg-gray-50/50"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-2">City</label>
+                <input type="text" name="city" required placeholder="Ahmedabad"
+                  class="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none bg-gray-50/50"/>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Pincode</label>
+                <input type="text" name="pincode" required placeholder="380001"
+                  class="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none bg-gray-50/50"/>
+              </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-2">State</label>
+                <input type="text" name="state" required placeholder="Gujarat"
+                  class="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none bg-gray-50/50"/>
+            </div>
+
+            <div class="pt-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Payment Method</h3>
+                <div class="relative group cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="COD" checked class="hidden peer">
+                    <div class="flex items-center justify-between p-5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/30 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="p-2 bg-white rounded-lg shadow-sm">
+                                <i class="ri-money-dollar-circle-line text-2xl text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">Cash on Delivery</p>
+                                <p class="text-xs text-gray-500">Pay when you receive the package</p>
+                            </div>
+                        </div>
+                        <i class="ri-checkbox-circle-fill text-2xl text-indigo-600"></i>
+                    </div>
+                </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-10">
+          <h2 class="text-xl font-bold text-gray-800 mb-6">Order Summary</h2>
+
+          <div class="space-y-6 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <% if (cartItems && cartItems.length > 0) { %>
+                <% cartItems.forEach(item => { 
+                    const finalPrice = item.productId.price - (item.productId.price * (item.productId.discount || 0)) / 100;
+                %>
+                <div class="flex gap-4 items-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
+                        <img src="data:image/jpeg;base64,<%= item.productId.image.toString('base64') %>" class="w-full h-full object-contain p-2">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-gray-800 truncate"><%= item.productId.name %></p>
+                        <p class="text-sm text-gray-500">Qty: <%= item.quantity %></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-gray-900">₹<%= (finalPrice * item.quantity).toFixed(0) %></p>
+                    </div>
+                </div>
+                <% }) %>
+            <% } %>
+          </div>
+
+          <div class="space-y-3 border-t pt-6 text-gray-600">
+            <div class="flex justify-between">
+                <span>Subtotal</span>
+                <span>₹<%= totalAmount %></span>
+            </div>
+            <div class="flex justify-between">
+                <span>Shipping</span>
+                <span class="text-green-600 font-medium">FREE</span>
+            </div>
+            <div class="flex justify-between text-xl font-extrabold text-gray-900 pt-3 border-t border-dashed">
+                <span>Total Amount</span>
+                <span class="text-indigo-600">₹<%= totalAmount %></span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            form="checkout-form"
+            class="w-full mt-8 bg-indigo-600 text-white text-lg py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98]">
+            Complete Order
+          </button>
+
+          <div class="mt-8 flex justify-center gap-6 grayscale opacity-60">
+            <i class="ri-visa-line text-3xl"></i>
+            <i class="ri-mastercard-line text-3xl"></i>
+            <i class="ri-secure-payment-line text-3xl"></i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+</style>
+
+<%- include('./partials/footer') %>

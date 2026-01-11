@@ -1,0 +1,124 @@
+<%- include('./partials/header') %>
+
+<% if (success && success.length > 0) { %>
+  <div class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-blue-500">
+    <span class="text-white"><%= success %></span>
+  </div>
+<% } %>
+
+<% if (error && error.length > 0) { %>
+  <div class="absolute top-5 left-1/2 -translate-x-1/2 p-3 rounded-md bg-red-500">
+    <span class="text-white"><%= error %></span>
+  </div>
+<% } %>
+
+<div class="h-10"></div>
+<div class="w-full min-h-screen bg-[#F8F9FA] pb-20 px-4 md:px-16">
+  <div class="max-w-4xl mx-auto">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+      <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">My Orders</h2>
+      <div class="flex items-center gap-3">
+        <% const hasCancelledOrders = orders && orders.some(order => order.orderStatus === 'Cancelled'); %>
+        <% if (hasCancelledOrders) { %>
+          <form action="/users/orders/clear-history" method="POST" onsubmit="return confirm('Are you sure you want to delete all cancelled orders?')">
+            <button type="submit" class="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-wide px-4 py-2 border border-red-100 rounded-full hover:bg-red-50 transition-all">
+              Clear History
+            </button>
+          </form>
+        <% } %>
+        <a href="/shop" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+          Continue Shopping <span class="ml-1">→</span>
+        </a>
+      </div>
+    </div>
+
+    <% if (orders && orders.length > 0) { %>
+      <div class="space-y-8">
+        <% orders.forEach(order => { %>
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
+            
+            <div class="bg-gray-50/80 px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-gray-100 items-center">
+              <div>
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Order ID</p>
+                <p class="text-xs font-mono font-semibold text-gray-600">#<%= order._id %></p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Placed On</p>
+                <p class="text-sm font-medium text-gray-700"><%= order.createdAt.toDateString() %></p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Status</p>
+                <% 
+                  let statusClass = "bg-gray-100 text-gray-600";
+                  if(order.orderStatus === 'Delivered') statusClass = "bg-green-100 text-green-700";
+                  if(order.orderStatus === 'Cancelled') statusClass = "bg-red-100 text-red-700";
+                  if(order.orderStatus === 'Processing') statusClass = "bg-blue-100 text-blue-700";
+                %>
+                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase <%= statusClass %>">
+                  <%= order.orderStatus %>
+                </span>
+              </div>
+              <div class="text-right">
+                 <a href="/users/orders/<%= order._id %>" class="text-xs font-bold text-indigo-600 hover:underline">Details</a>
+              </div>
+            </div>
+
+            <div class="p-6 divide-y divide-gray-50">
+              <% order.items.forEach(item => { %>
+                <div class="flex gap-6 py-4 first:pt-0 last:pb-0 items-center">
+                  <div class="w-20 h-20 bg-gray-50 rounded-xl flex-shrink-0 border border-gray-100 overflow-hidden">
+                    <img src="data:image/jpeg;base64,<%= item.product.image.toString('base64') %>" class="w-full h-full object-contain p-2">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-gray-800 text-base truncate"><%= item.name %></h4>
+                    <p class="text-sm text-gray-500 mt-0.5">Qty: <span class="text-gray-900 font-semibold"><%= item.quantity %></span></p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-gray-900">₹<%= (item.price * item.quantity).toLocaleString() %></p>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+
+            <div class="px-6 py-5 bg-white border-t border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div class="flex items-center gap-4">
+                <div class="px-3 py-1 bg-indigo-50 rounded-lg">
+                    <p class="text-[10px] text-indigo-400 font-bold uppercase leading-tight">Total Amount</p>
+                    <p class="text-lg font-black text-indigo-700 leading-tight">₹<%= order.totalAmount.toLocaleString() %></p>
+                </div>
+                <div class="hidden sm:block h-8 w-[1px] bg-gray-100"></div>
+                <p class="text-xs text-gray-500 font-medium">Payment: <span class="text-gray-800 uppercase tracking-tight"><%= order.paymentStatus %></span></p>
+              </div>
+
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <% if (order.orderStatus !== 'Cancelled' && order.orderStatus !== 'Delivered') { %>
+                  <form action="/users/orders/cancel/<%= order._id %>" method="POST" class="w-full" onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                    <button type="submit" class="w-full sm:w-auto px-6 py-2.5 text-red-500 text-xs font-bold uppercase tracking-wider rounded-xl border border-red-50 hover:bg-red-500 hover:text-white transition-all">
+                      Cancel Order
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+            
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+        <div class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="ri-shopping-bag-3-line text-3xl text-gray-300"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800">No orders yet</h3>
+        <p class="text-gray-400 mt-2 max-w-xs mx-auto">Looks like you haven't made your choice yet. Explore our shop for amazing products!</p>
+        <a href="/shop" class="mt-8 inline-block px-8 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-transform hover:-translate-y-1">
+            Start Shopping
+        </a>
+      </div>
+    <% } %>
+
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

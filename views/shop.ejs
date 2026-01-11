@@ -1,0 +1,165 @@
+<%- include('./partials/header') %>
+
+    <!-- SUCCESS FLASH -->
+    <% if (success && success.length> 0) { %>
+        <div
+            class="fixed top-20 right-6 z-50 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-lg animate-slide-in">
+            <div class="flex items-center gap-3">
+                <i class="ri-checkbox-circle-line text-xl"></i>
+                <span class="font-medium">
+                    <%= success %>
+                </span>
+            </div>
+        </div>
+        <% } %>
+
+            <!-- ERROR FLASH -->
+            <% if (error && error.length> 0) { %>
+                <div
+                    class="fixed top-20 right-6 z-50 bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg shadow-lg animate-slide-in">
+                    <div class="flex items-center gap-3">
+                        <i class="ri-error-warning-line text-xl"></i>
+                        <span class="font-medium">
+                            <%= error %>
+                        </span>
+                    </div>
+                </div>
+                <% } %>
+
+                    <div class="w-full min-h-screen flex items-start px-20 py-10">
+
+                        <!-- Sidebar Section -->
+                        <div class="w-[20%] flex flex-col items-start pr-10">
+
+                            <!-- Sorting Dropdown -->
+                            <div class="flex items-center gap-3 mb-10">
+                                <h3 class="text-sm font-medium">Sort by</h3>
+
+                                <form action="/shop" method="get">
+                                    <select class="border border-gray-300 px-3 py-1.5 text-sm rounded" name="sortby"
+                                        id="sortby" onchange="this.form.submit()">
+
+                                        <option value="newest" <%=sortby==="newest" ? "selected" : "" %>>Newest</option>
+                                        <option value="price-low" <%=sortby==="price-low" ? "selected" : "" %>>Price:
+                                            Low to High</option>
+                                        <option value="price-high" <%=sortby==="price-high" ? "selected" : "" %>>Price:
+                                            High to Low</option>
+                                    </select>
+                                </form>
+                            </div>
+
+                            <!-- Left Sidebar Links -->
+                            <div class="flex flex-col gap-3 mb-16">
+                                <a class="block text-base hover:underline" href="/shop/new">New Collection</a>
+                                <a class="block text-base hover:underline" href="/shop">All Products</a>
+                                <a class="block text-base hover:underline" href="/shop/discounted">Discounted
+                                    Products</a>
+                            </div>
+
+                            <!-- Filters Section -->
+                            <div class="flex flex-col gap-3">
+                                <h3 class="text-base font-medium mb-2">Filter by:</h3>
+
+                                <a class="block text-sm hover:underline" href="">Availability</a>
+                                <a class="block text-sm hover:underline" href="">Discount</a>
+                            </div>
+                        </div>
+
+                        <!-- Product Display Section -->
+                        <div class="w-[80%] flex flex-col">
+                            <div class="grid grid-cols-4 gap-6">
+
+                                <% products.forEach(function(product){ %>
+
+                                    <% const finalPrice=product.discount> 0
+                                        ? Math.max(product.price - (product.price * product.discount / 100), 0)
+                                        : product.price;
+                                        %>
+
+                                        <div class="w-full">
+
+                                            <!-- Product Image -->
+                                            <a href="/product/<%= product._id %>" class="block">
+                                                <div
+                                                    class="w-full h-64 flex items-center justify-center bg-[<%= product.bgcolor %>] overflow-hidden hover:opacity-90 transition cursor-pointer">
+                                                    <img class="h-full w-full object-contain p-4"
+                                                        src="data:image/jpeg;base64,<%= product.image.toString('base64') %>"
+                                                        alt="<%= product.name %>">
+                                                </div>
+                                            </a>
+
+                                            <!-- Product Info -->
+                                            <div
+                                                class="flex justify-between bg-[<%= product.panelcolor %>] items-center px-4 py-3 text-[<%= product.textcolor %>]">
+
+                                                <div class="flex-1">
+                                                    <a href="/product/<%= product._id %>" class="hover:underline">
+                                                        <h3 class="text-sm font-medium truncate">
+                                                            <%= product.name %>
+                                                        </h3>
+                                                    </a>
+
+                                                    <% if (product.discount> 0) { %>
+                                                        <div class="flex items-center gap-2">
+                                                            <!-- Final Price -->
+                                                            <span class="text-sm font-semibold text-green-600">
+                                                                ₹ <%= finalPrice.toFixed(0) %>
+                                                            </span>
+
+                                                            <!-- Original Price -->
+                                                            <span class="text-xs line-through text-gray-400">
+                                                                ₹ <%= product.price %>
+                                                            </span>
+
+                                                            <!-- Discount Badge -->
+                                                            <span
+                                                                class="text-xs font-medium text-white bg-red-500 rounded px-1.5 py-0.5">
+                                                                <%= product.discount %>% OFF
+                                                            </span>
+                                                        </div>
+                                                        <% } else { %>
+                                                            <!-- No discount -->
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="text-sm font-medium text-black">
+                                                                    ₹ <%= finalPrice.toFixed(0) %>
+                                                                </span>
+                                                            </div>
+                                                            <% } %>
+
+                                                </div>
+
+                                                <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+
+                                                    <!-- Wishlist -->
+                                                    <form action="/togglewishlist/<%= product._id %>" method="POST"
+                                                        class="inline">
+                                                        <button type="submit"
+                                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition"
+                                                            title="<%= (user && user.wishlist && user.wishlist.some(item => item.toString() === product._id.toString())) ? 'Remove from Wishlist' : 'Add to Wishlist' %>">
+                                                            <i
+                                                                class="<%= (user && user.wishlist && user.wishlist.some(item => item.toString() === product._id.toString())) ? 'ri-heart-fill text-red-500' : 'ri-heart-line text-black' %> text-lg"></i>
+                                                        </button>
+                                                    </form>
+
+                                                    <!-- Add to Cart -->
+                                                    <form action="/addtocart/<%= product._id %>" method="POST"
+                                                        class="inline">
+                                                        <button type="submit"
+                                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition"
+                                                            title="Add to Cart">
+                                                            <i class="ri-add-line text-lg"></i>
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <% }) %>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <%- include('./partials/footer') %>

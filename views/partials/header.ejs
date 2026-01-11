@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatch - Premium Shopping</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="font-['helvetica_now_display'] bg-gray-50">
+    <!-- Flash Messages -->
+    <!-- <% if (error && error.length > 0) { %>
+        <div class="fixed top-20 right-6 z-50 bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg shadow-lg animate-slide-in">
+            <div class="flex items-center gap-3">
+                <i class="ri-error-warning-line text-xl"></i>
+                <span class="font-medium"><%= error[0] %></span>
+            </div>
+        </div>
+    <% } %> -->
+
+    <!-- <% if (success && success.length > 0) { %>
+        <div class="fixed top-20 right-6 z-50 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-lg animate-slide-in">
+            <div class="flex items-center gap-3">
+                <i class="ri-checkbox-circle-line text-xl"></i>
+                <span class="font-medium"><%= success %></span>
+            </div>
+        </div>
+    <% } %> -->
+
+    <!-- Navigation Bar -->
+    <!-- <% if (error && error.length > 0) { %>
+    <div class="fixed top-20 right-6 z-50 bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg shadow-lg animate-slide-in">
+        <div class="flex items-center gap-3">
+            <i class="ri-error-warning-line text-xl"></i>
+            <span class="font-medium"><%= error[0] %></span>
+        </div>
+    </div>
+<% } %> -->
+
+<!-- <% if (success && success.length > 0) { %>
+    <div class="fixed top-20 right-6 z-50 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-lg animate-slide-in">
+        <div class="flex items-center gap-3">
+            <i class="ri-checkbox-circle-line text-xl"></i>
+            <span class="font-medium"><%= success[0] %></span>
+        </div>
+    </div>
+<% } %> -->
+
+<nav class="w-full fixed top-0 left-0 bg-white shadow-sm z-50 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <a href="/shop" class="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">
+                Scatch
+            </a>
+
+            <div class="flex items-center gap-8">
+                <a href="/shop" class="text-sm font-medium text-gray-700 hover:text-black transition-colors relative group">
+                    Shop
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-black transition-all group-hover:w-full"></span>
+                </a>
+                
+                <% if (loggedin) { %>
+                    <a href="/cart" class="text-sm font-medium text-gray-700 hover:text-black transition-colors relative group flex items-center gap-1">
+                        <i class="ri-shopping-cart-line text-lg"></i>
+                        <span>Cart</span>
+                        <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                            <span class="ml-1 w-5 h-5 bg-black text-white text-[10px] rounded-full flex items-center justify-center">
+                                <%= cartCount %>
+                            </span>
+                        <% } %>
+                    </a>
+                    
+                    <a href="/orders" class="text-sm font-medium text-gray-700 hover:text-black transition-colors relative group flex items-center gap-1">
+                        <i class="ri-list-check-3 text-lg"></i>
+                        <span>Orders</span>
+                    </a>
+
+                    <a href="/myaccount" class="text-sm font-medium text-gray-700 hover:text-black transition-colors relative group flex items-center gap-1">
+                        <i class="ri-user-line text-lg"></i>
+                        <span>Account</span>
+                    </a>
+                    
+                    <a href="/users/logout" class="px-4 py-2 border border-red-600 text-red-600 text-sm font-medium rounded-full hover:bg-red-600 hover:text-white transition-all duration-200">
+                        Logout
+                    </a>
+                <% } else { %>
+                    <a href="/users/login" class="px-4 py-2 bg-black text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-colors">
+                        Login
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</nav>
+
+    <!-- Spacer for fixed navbar -->
+    <div class="h-20"></div>
+
+    <style>
+        @keyframes slide-in {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slide-in 0.3s ease-out;
+        }
+    </style>
+
+    <script>
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.animate-slide-in');
+            flashMessages.forEach(msg => {
+                msg.style.transition = 'opacity 0.3s ease-out';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+    </script>
