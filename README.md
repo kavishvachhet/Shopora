@@ -146,31 +146,12 @@ shopora/
 - `GET /api/orders` - Get order history
 - `GET /api/orders/:id` - Get order details
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
 Kavish Vachheta - kavishkumar.v@ahduni.edu.in
 
 Project Link: [https://github.com/Kavish_Vachheta/shopora](https://github.com/kavishvachhet/Shopora)
-
-## Acknowledgments
-
-- Thanks to all contributors
-- Inspiration from modern e-commerce platforms
-- Built with dedication and care for the best shopping experience
 
 ---
 
