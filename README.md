@@ -1,148 +1,110 @@
 # Shopora 🛍️
 
-A full-featured e-commerce application that provides a seamless shopping experience for customers and comprehensive product management for store owners.
+Shopora is a premium, full-stack e-commerce platform designed for a seamless shopping and management experience. This project is currently undergoing a strategic migration from a monolithic EJS-based architecture to a modern, decoupled React frontend with a robust Express API backend.
 
-## Features
+## 🚀 Vision
+The goal of Shopora is to provide owners with powerful inventory management tools while offering customers a fast, responsive, and visually stunning interface.
 
-### Customer Features
-- **User Authentication**: Secure login system required before placing orders
-- **Product Browsing**: Browse through available products with detailed information
-- **Product Details Page**: View comprehensive product information including price, description, and specifications
-- **Shopping Cart**: Add products to cart and manage quantities before checkout
-- **Wishlist**: Save products for later purchase
-- **Order Management**: 
-  - Complete checkout with total billing breakdown
-  - View discount calculations and final amount
-  - Track order history with detailed order lists
-- **Email Notifications**: Receive order confirmation emails after successful purchase
-- **Password Recovery**: Reset forgotten passwords through email verification
+## 🛠️ Tech Stack
+- **Frontend**: [React 19](https://react.dev/), [Vite](https://vitejs.dev/), [React Router 7](https://reactrouter.com/), [React Icons](https://react-icons.github.io/react-icons/)
+- **Backend**: [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/)
+- **Database**: [MongoDB](https://www.mongodb.com/) via [Mongoose](https://mongoosejs.com/)
+- **Authentication**: JWT (JSON Web Tokens), bcrypt for password hashing
+- **Styling**: Premium CSS3 with focus on responsiveness and modern aesthetics
 
-### Owner Features
-- **Admin Authentication**: Secure login portal for store owners
-- **Product Management**: Full CRUD operations
-  - Create new products
-  - Read/view product details
-  - Update existing products
-  - Delete products from inventory
-- **Order Notifications**: Receive email alerts when customers place orders
-- **Password Recovery**: Reset forgotten admin passwords
+## ✨ Key Features
+- **Owner Dashboard**: Secure management of products (Create, Read, Update, Delete).
+- **Product Gallery**: Dynamic product listings with real-time updates.
+- **Secure Authentication**: Multi-role authentication (Owner/User) with protected routes.
+- **Modern UI/UX**: Clean, minimal design with smooth transitions and micro-animations.
+- **API First**: Scalable RESTful API architecture.
 
-## Technology Stack
+## 📁 Project Structure
+- `/client`: The React frontend application (Vite-powered).
+- `/routes/api.js`: The central hub for all API communications.
+- `/models`: Mongoose schemas for Users, Owners, and Products.
+- `/controllers`: Logic for handling requests and responses.
+- `/config`: Database and environment configurations.
 
-- **Frontend**: EJS (Embedded JavaScript templating)
-- **Backend**: Node.js with Express.js
-- **Database**: MongoDB
-- **Authentication**: JWT, Bcrypt, cookies
-- **Email Service**: Nodemailer
-
-## Installation
-
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- Database (MongoDB/MySQL/PostgreSQL)
-
-### Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/kavishvachhet/Shopora
-cd Shopora
-```
-
-2. Install dependencies
-```bash
-npm install
-```
-
-3. Add `.env` file with your configuration:
-```
-DATABASE_URL=your_database_url
-JWT_SECRET=your_jwt_secret
-EMAIL_SERVICE=your_email_service
-EMAIL_USER=your_email
-EMAIL_PASSWORD=your_email_password
-```
-
-
-4. Start the application
-```bash
-npm start
-```
-
-The application will be available at `http://localhost:3000`
-
-## Usage
-
-### Customer Flow
-1. Register or login to your account
-2. Browse products and view detailed information
-3. Add desired products to cart or wishlist
-4. Proceed to checkout and review total billing
-5. Place order and receive confirmation email
-6. Track orders in order history
-
-### Owner Flow
-1. Login to admin dashboard
-2. Add new products with details and pricing
-3. Update or remove existing products
-4. Monitor orders and receive email notifications
-5. Manage inventory and product listings
-
-## Project Structure
-
-```
-shopora/
-├── client/              # Frontend application
-│   ├── src/
-│   │   ├── components/  # Reusable components
-│   │   ├── pages/       # Page components
-│   │   ├── services/    # API services
-│   │   └── utils/       # Utility functions
-├── server/              # Backend application
-│   ├── controllers/     # Route controllers
-│   ├── models/          # Database models
-│   ├── routes/          # API routes
-│   ├── middleware/      # Custom middleware
-│   └── config/          # Configuration files
-└── README.md
-```
-
-## API Endpoints
+## 🔗 API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
-- `POST /api/auth/forgot-password` - Request password reset
-- `POST /api/auth/reset-password` - Reset password
+- `GET /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user status
+- `POST /api/password/forgot` - Request password reset
+- `POST /api/password/reset/:token` - Reset password
 
 ### Products
 - `GET /api/products` - Get all products
 - `GET /api/products/:id` - Get product by ID
-- `POST /api/products` - Create product (Owner only)
-- `PUT /api/products/:id` - Update product (Owner only)
-- `DELETE /api/products/:id` - Delete product (Owner only)
+- `GET /api/products/discounted` - Get products with discounts
 
 ### Cart & Wishlist
 - `GET /api/cart` - Get user cart
-- `POST /api/cart` - Add item to cart
-- `PUT /api/cart/:id` - Update cart item
-- `DELETE /api/cart/:id` - Remove from cart
+- `POST /api/cart/add/:productId` - Add item to cart
+- `POST /api/cart/increase/:productId` - Increase quantity
+- `POST /api/cart/decrease/:productId` - Decrease quantity
+- `POST /api/cart/remove/:productId` - Remove from cart
 - `GET /api/wishlist` - Get user wishlist
-- `POST /api/wishlist` - Add to wishlist
+- `POST /api/wishlist/toggle/:id` - Toggle item in wishlist
 
 ### Orders
-- `POST /api/orders` - Place new order
 - `GET /api/orders` - Get order history
-- `GET /api/orders/:id` - Get order details
+- `POST /api/orders/place` - Place new order
+- `POST /api/orders/razorpay/create` - Create Razorpay order
+- `POST /api/orders/razorpay/verify` - Verify payment signature
+- `POST /api/orders/cancel/:orderId` - Cancel order
 
+### Owner (Admin)
+- `POST /api/owner/login` - Owner login
+- `GET /api/owner/products` - Get all products (Owner view)
+- `POST /api/owner/products/create` - Create product (Owner only)
+- `POST /api/owner/products/edit/:id` - Update product (Owner only)
+- `POST /api/owner/products/delete/:id` - Delete product (Owner only)
 
-## Contact
+## 🏁 Getting Started
 
-Kavish Vachheta - kavishkumar.v@ahduni.edu.in
+### Prerequisites
+- Node.js (v18+)
+- MongoDB (Local or Atlas)
 
-Project Link: [https://github.com/Kavish_Vachheta/shopora](https://github.com/kavishvachhet/Shopora)
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/kavishvachhet/Shopora.git
+   ```
+2. Install root dependencies:
+   ```bash
+   npm install
+   ```
+3. Install client dependencies:
+   ```bash
+   cd client
+   npm install
+   ```
+4. Set up environment variables in a `.env` file:
+   ```env
+   MONGO_DB_URI=your_mongodb_uri
+   JWT_KEY=your_secret_key
+   RAZORPAY_KEY_ID=your_razorpay_key
+   RAZORPAY_KEY_SECRET=your_razorpay_secret
+   ```
+
+### Running the App
+- **Start the Server**:
+  ```bash
+  nodemon app.js
+  ```
+- **Start the Frontend**:
+  ```bash
+  cd client
+  npm run dev
+  ```
+
+## 🚧 Migration Status
+We are currently migrating the legacy EJS templates to a modern React architecture. During this transition, some `.ejs` files are being maintained for reference but will eventually be deprecated in favor of the React frontend.
 
 ---
-
-Made with ❤️ by [Kavish Vachheta]
+Built with ❤️ by [Kavish Vachhet](https://github.com/kavishvachhet)

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const usermodel = require("../models/user_model");
 const bcrypt = require("bcrypt");
+const ownermodel = require("../models/owners_model");
 const jwt = require("jsonwebtoken");
 
 module.exports.registerUser = async (req, res) => {
@@ -12,32 +13,24 @@ module.exports.registerUser = async (req, res) => {
         if (acc_alr) {
             req.flash("error","Account Already Exists..");
             return res.redirect("/register");
-            // return res.status(400).json({
-            //     message: "Account Already Exists.."
-            // });
         }
 
-        // Generate salt & hash password
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(password, salt);
 
-        // Create user
         const user = await usermodel.create({
             fullname,
             email,
             password: hash
         });
 
-        // Create JWT token
         const token = jwt.sign(
             { email, id: user._id },
             process.env.JWT_SECRET
         );
 
-        // Send token as cookie
         res.cookie("token", token);
 
-        // res.status(201).json({ message: "User registered successfully!"});
         req.flash("success","Account Created Successfully");
         res.redirect("/shop");
     } catch (err) {
@@ -59,19 +52,66 @@ module.exports.loginUser = async function (req, res) {
             return res.send("Email or Password Incorrect..");
         }
 
-        // Create JWT token
         const token = jwt.sign(
             { email, id: user._id },
             process.env.JWT_SECRET
         );
 
-        // Send token as cookie
         res.cookie("token", token);
 
-        // Send success message
-        // res.send("You can Login...");
         res.redirect("/shop");
     });
+};
+
+module.exports.loginadmin = async function (req, res) {
+  try {
+    const { email, password } = req.body;
+
+    console.log("Login attempt:", email);
+
+    if (!email || !password) {
+      req.flash("error", "Email and Password are required");
+      return res.redirect("/owner/login");
+    }
+
+    const owner = await ownermodel.findOne({ email });
+
+    if (!owner) {
+      console.log("Owner not found");
+      req.flash("error", "Email or Password Incorrect");
+      return res.redirect("/owner/login");
+    }
+
+    console.log("Owner found:", owner.email);
+
+    // Compare with the 'password' field (not 'passwordHash')
+    const isMatch = await bcrypt.compare(password, owner.password);
+
+    if (!isMatch) {
+      console.log("Password match failed");
+      req.flash("error", "Email or Password Incorrect");
+      return res.redirect("/owner/login");
+    }
+
+    console.log("✅ Password matched");
+
+    const token = jwt.sign(
+      { id: owner._id, email: owner.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true
+    });
+
+    res.redirect("/owner/admin");
+
+  } catch (err) {
+    console.error("Login error:", err);
+    req.flash("error", "Something went wrong");
+    res.redirect("/owner/login");
+  }
 };
 
 module.exports.logout = async function (req,res) {
