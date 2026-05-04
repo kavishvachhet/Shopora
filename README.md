@@ -18,6 +18,7 @@ The goal of Shopora is to provide owners with powerful inventory management tool
 - **Secure Authentication**: Multi-role authentication (Owner/User) with protected routes.
 - **Modern UI/UX**: Clean, minimal design with smooth transitions and micro-animations.
 - **API First**: Scalable RESTful API architecture.
+- **Razorpay Integration**: Seamless payment processing with server-side signature verification.
 
 ## 📁 Project Structure
 - `/client`: The React frontend application (Vite-powered).
@@ -102,6 +103,11 @@ The goal of Shopora is to provide owners with powerful inventory management tool
   cd client
   npm run dev
   ```
+
+## 💳 Payment Integration
+Shopora is integrated with **Razorpay** for a secure checkout experience.
+- **Test Mode**: To test payments, use the [Razorpay Test Card details](https://razorpay.com/docs/payments/payments/test-card-details/).
+- **Workflow**: The system creates a unique Razorpay Order, processes the payment on the frontend, and performs a cryptographic signature verification on the backend before finalizing the order.
 
 ## 🚧 Migration Status
 We are currently migrating the legacy EJS templates to a modern React architecture. During this transition, some `.ejs` files are being maintained for reference but will eventually be deprecated in favor of the React frontend.
