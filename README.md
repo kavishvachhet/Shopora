@@ -107,4 +107,4 @@ The goal of Shopora is to provide owners with powerful inventory management tool
 We are currently migrating the legacy EJS templates to a modern React architecture. During this transition, some `.ejs` files are being maintained for reference but will eventually be deprecated in favor of the React frontend.
 
 ---
-Built with ❤️ by [Kavish Vachhet](https://github.com/kavishvachhet)
+Built with ❤️ by [Kavish Vachheta](https://github.com/kavishvachhet)
