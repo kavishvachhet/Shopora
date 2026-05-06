@@ -51,7 +51,7 @@ export default function MyAccount() {
         <div className="account-card">
           <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative' }} ref={menuRef}>
             <div className="account-avatar" onClick={() => setMenuOpen(!menuOpen)}>
-              {user.image ? <img src={`data:image/jpeg;base64,${user.image}`} alt="Profile" /> : user.fullname?.charAt(0).toUpperCase()}
+              {user.image ? <img src={user.image} alt="Profile" /> : user.fullname?.charAt(0).toUpperCase()}
             </div>
             {menuOpen && (
               <div style={{ position: 'absolute', left: 0, top: 88, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow)', zIndex: 10, overflow: 'hidden', minWidth: 150 }}>

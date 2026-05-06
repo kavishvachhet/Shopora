@@ -1,33 +1,38 @@
 # Shopora 🛍️
 
-Shopora is a premium, full-stack e-commerce platform designed for a seamless shopping and management experience. This project is currently undergoing a strategic migration from a monolithic EJS-based architecture to a modern, decoupled React frontend with a robust Express API backend.
+Shopora is a premium, full-stack e-commerce platform designed for a seamless shopping and management experience. This project has successfully migrated from a monolithic EJS-based architecture to a modern, decoupled React frontend with a high-performance Express API backend.
 
-## 🚀 Vision
-The goal of Shopora is to provide owners with powerful inventory management tools while offering customers a fast, responsive, and visually stunning interface.
+## 🚀 Performance & Scalability
+Shopora is built with scale in mind. Recent optimizations include:
+- **Server-Side Pagination**: Efficiently handle thousands of products with cursor-based pagination logic.
+- **MongoDB Indexing**: Optimized database queries for lightning-fast filtering, sorting, and searching.
+- **Progressive Loading**: Implementation of Skeleton Loaders and "Load More" functionality for a smoother user experience.
+- **Resource Optimization**: Optimized API responses to minimize payload size and improve mobile performance.
 
 ## 🛠️ Tech Stack
 - **Frontend**: [React 19](https://react.dev/), [Vite](https://vitejs.dev/), [React Router 7](https://reactrouter.com/), [React Icons](https://react-icons.github.io/react-icons/)
 - **Backend**: [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) via [Mongoose](https://mongoosejs.com/)
+- **Database**: [MongoDB](https://www.mongodb.com/) via [Mongoose](https://mongoosejs.com/) with Custom Indexing
 - **Authentication**: JWT (JSON Web Tokens), bcrypt for password hashing
 - **Styling**: Premium CSS3 with focus on responsiveness and modern aesthetics
+- **Image Storage**: [Cloudinary](https://cloudinary.com/) for optimized image delivery
 
 ## ✨ Key Features
-- **Owner Dashboard**: Secure management of products (Create, Read, Update, Delete).
-- **Product Gallery**: Dynamic product listings with real-time updates.
+- **Intelligent Search & Filter**: Real-time product searching and multi-attribute filtering.
+- **Owner Dashboard**: Secure, role-based management for inventory and products (CRUD).
+- **Smooth Navigation**: Skeleton loaders and progress indicators for non-blocking UI transitions.
 - **Secure Authentication**: Multi-role authentication (Owner/User) with protected routes.
-- **Modern UI/UX**: Clean, minimal design with smooth transitions and micro-animations.
-- **API First**: Scalable RESTful API architecture.
 - **Razorpay Integration**: Seamless payment processing with server-side signature verification.
+- **Wishlist & Cart**: Persistent storage for user shopping preferences.
 
 ## 📁 Project Structure
 - `/client`: The React frontend application (Vite-powered).
 - `/routes/api.js`: The central hub for all API communications.
-- `/models`: Mongoose schemas for Users, Owners, and Products.
+- `/models`: Optimized Mongoose schemas with indexing.
 - `/controllers`: Logic for handling requests and responses.
 - `/config`: Database and environment configurations.
 
-## 🔗 API Endpoints
+## 🔗 API Endpoints (v1)
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
@@ -37,8 +42,8 @@ The goal of Shopora is to provide owners with powerful inventory management tool
 - `POST /api/password/forgot` - Request password reset
 - `POST /api/password/reset/:token` - Reset password
 
-### Products
-- `GET /api/products` - Get all products
+### Products (Paginated)
+- `GET /api/products?page=1&limit=12&sortby=newest` - Get products with pagination
 - `GET /api/products/:id` - Get product by ID
 - `GET /api/products/discounted` - Get products with discounts
 
@@ -70,6 +75,7 @@ The goal of Shopora is to provide owners with powerful inventory management tool
 ### Prerequisites
 - Node.js (v18+)
 - MongoDB (Local or Atlas)
+- Cloudinary Account (for image uploads)
 
 ### Installation
 1. Clone the repository:
@@ -88,15 +94,18 @@ The goal of Shopora is to provide owners with powerful inventory management tool
 4. Set up environment variables in a `.env` file:
    ```env
    MONGO_DB_URI=your_mongodb_uri
-   JWT_KEY=your_secret_key
+   JWT_SECRET=your_secret_key
    RAZORPAY_KEY_ID=your_razorpay_key
    RAZORPAY_KEY_SECRET=your_razorpay_secret
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
    ```
 
 ### Running the App
 - **Start the Server**:
   ```bash
-  nodemon app.js
+  npm start
   ```
 - **Start the Frontend**:
   ```bash

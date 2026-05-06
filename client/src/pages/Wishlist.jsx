@@ -35,7 +35,7 @@ export default function Wishlist() {
             {items.map(p => (
               <div key={p._id} className="card">
                 <div style={{ background: p.bgcolor || 'var(--cream)', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-                  {p.image && <img src={`data:image/jpeg;base64,${p.image}`} alt={p.name} style={{ maxHeight: '100%', objectFit: 'contain' }} />}
+                  {p.image && <img src={p.image} alt={p.name} style={{ maxHeight: '100%', objectFit: 'contain' }} />}
                 </div>
                 <div className="card-body">
                   <h3 style={{ fontWeight: 600, marginBottom: '.25rem' }}>{p.name}</h3>

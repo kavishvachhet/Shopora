@@ -11,21 +11,51 @@ export default function Shop() {
   const [sortby, setSortby] = useState('newest')
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
   const { fetchUser } = useAuth()
 
-  const load = async (sort = sortby, f = filter) => {
-    setLoading(true)
+  const load = async (sort = sortby, f = filter, s = search, pageNumber = 1, reset = false) => {
+    if (reset) setLoading(true)
+    else setLoadingMore(true)
+    
     try {
-      const url = f === 'discounted' ? '/products/discounted' : `/products?sortby=${sort}`
+      const url = f === 'discounted' ? `/products/discounted?page=${pageNumber}&limit=12` : `/products?sortby=${sort}&search=${s}&page=${pageNumber}&limit=12`
       const { data } = await api.get(url)
-      setProducts(data.products)
-      setWishlist(data.wishlist.map(w => w.toString()))
+      
+      if (reset) {
+        setProducts(data.products || [])
+      } else {
+        setProducts(prev => [...prev, ...(data.products || [])])
+      }
+      setWishlist((data.wishlist || []).map(w => w.toString()))
+      setTotalPages(data.totalPages || 1)
+      setTotalProducts(data.totalProducts || 0)
     } catch (err) {
       toast.error('Failed to load products')
-    } finally { setLoading(false) }
+    } finally { 
+      setLoading(false)
+      setLoadingMore(false)
+    }
   }
 
-  useEffect(() => { load() }, [sortby, filter])
+  // Effect for Sort and Filter changes
+  useEffect(() => { 
+    setPage(1)
+    load(sortby, filter, search, 1, true) 
+  }, [sortby, filter])
+
+  // Debounced Effect for Search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      load(sortby, filter, search, 1, true)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const toggleWishlist = async (id) => {
     try {
@@ -50,6 +80,17 @@ export default function Shop() {
       <div className="page-inner">
         <div className="shop-layout">
           <aside className="sidebar">
+            <div className="form-group" style={{ marginBottom: '2rem' }}>
+              <h4>Search</h4>
+              <input 
+                type="text" 
+                className="form-input" 
+                placeholder="Search products..." 
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ fontSize: '.85rem', padding: '.6rem .8rem' }}
+              />
+            </div>
             <h4>Sort By</h4>
             <select value={sortby} onChange={e => setSortby(e.target.value)}>
               <option value="newest">Newest</option>
@@ -73,7 +114,7 @@ export default function Shop() {
                   <div className="card" key={p._id}>
                     <Link to={`/product/${p._id}`}>
                       <div style={{ background: p.bgcolor || '#f5f0e8', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-                        {p.image && <img src={`data:image/jpeg;base64,${p.image}`} alt={p.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
+                        {p.image && <img src={p.image} alt={p.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
                       </div>
                     </Link>
                     <div className="card-body" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -95,7 +136,48 @@ export default function Shop() {
                     </div>
                   </div>
                 ))}
+                {loadingMore && [...Array(4)].map((_, i) => (
+                  <div className="skeleton-card" key={i}>
+                    <div className="skeleton skeleton-img" />
+                    <div className="skeleton skeleton-title" />
+                    <div className="skeleton skeleton-price" />
+                    <div className="skeleton skeleton-price" style={{ width: '30%' }} />
+                  </div>
+                ))}
               </div>
+            )}
+
+            {!loading && products.length > 0 && (
+              <>
+                <div className="pagination-info">
+                  <p className="progress-text">Showing {products.length} of {totalProducts} products</p>
+                  <div className="progress-bar-bg">
+                    <div className="progress-bar-fill" style={{ width: `${(products.length / totalProducts) * 100}%` }}></div>
+                  </div>
+                </div>
+
+                {page < totalPages && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}>
+                    <button 
+                      className="btn btn-primary" 
+                      disabled={loadingMore}
+                      onClick={() => {
+                        const nextPage = page + 1;
+                        setPage(nextPage);
+                        load(sortby, filter, search, nextPage, false);
+                      }}
+                    >
+                      {loadingMore ? 'Loading...' : 'Load More Products'}
+                    </button>
+                  </div>
+                )}
+
+                {page >= totalPages && products.length > 0 && (
+                  <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)', fontSize: '.9rem', fontWeight: 500 }}>
+                    ✨ You've reached the end of our collection!
+                  </div>
+                )}
+              </>
             )}
           </main>
         </div>

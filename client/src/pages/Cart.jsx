@@ -50,7 +50,7 @@ export default function Cart() {
                 return (
                   <div key={item.productId._id} className="card" style={{ display: 'grid', gridTemplateColumns: '120px 1fr', overflow: 'hidden' }}>
                     <div style={{ background: item.productId.bgcolor || 'var(--cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-                      {item.productId.image && <img src={`data:image/jpeg;base64,${item.productId.image}`} alt={item.productId.name} style={{ maxHeight: '80px', objectFit: 'contain' }} />}
+                      {item.productId.image && <img src={item.productId.image} alt={item.productId.name} style={{ maxHeight: '80px', objectFit: 'contain' }} />}
                     </div>
                     <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div>

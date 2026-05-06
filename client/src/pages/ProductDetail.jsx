@@ -33,7 +33,7 @@ export default function ProductDetail() {
         <Link to="/shop" style={{ fontSize: '.85rem', color: 'var(--text-muted)', display: 'inline-block', marginBottom: '1.5rem' }}>← Back to Shop</Link>
         <div className="product-detail">
           <div className="product-detail-img" style={{ background: product.bgcolor || 'var(--cream)' }}>
-            {product.image && <img src={`data:image/jpeg;base64,${product.image}`} alt={product.name} />}
+            {product.image && <img src={product.image} alt={product.name} />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

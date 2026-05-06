@@ -172,6 +172,71 @@ textarea.form-input{resize:vertical;min-height:100px}
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* Skeleton Loading */
+.skeleton {
+  background: #eee;
+  background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+  border-radius: var(--radius-sm);
+  background-size: 200% 100%;
+  animation: 1.5s shine linear infinite;
+}
+@keyframes shine {
+  to {
+    background-position-x: -200%;
+  }
+}
+.skeleton-card {
+  height: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-img {
+  height: 220px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.skeleton-title {
+  height: 18px;
+  width: 70%;
+  margin-bottom: 1rem;
+}
+.skeleton-price {
+  height: 14px;
+  width: 40%;
+  margin-bottom: 0.5rem;
+}
+
+/* Progress Bar */
+.pagination-info {
+  width: 100%;
+  max-width: 320px;
+  margin: 2.5rem auto 1rem;
+  text-align: center;
+}
+.progress-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.progress-bar-bg {
+  height: 5px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--charcoal);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Responsive */
 @media(max-width:768px){
   .hero-inner{grid-template-columns:1fr}

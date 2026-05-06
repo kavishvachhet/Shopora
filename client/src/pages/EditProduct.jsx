@@ -43,7 +43,7 @@ export default function EditProduct() {
           <form onSubmit={handleSubmit} className="card" style={{ padding: '2rem' }}>
             <div className="form-group">
               <label className="form-label">Current Image</label>
-              {form.image && <img src={`data:image/jpeg;base64,${form.image}`} alt="Current" style={{ height: 100, borderRadius: 'var(--radius-sm)', marginBottom: '.5rem', border: '1px solid var(--border)' }} />}
+              {form.image && <img src={form.image} alt="Current" style={{ height: 100, borderRadius: 'var(--radius-sm)', marginBottom: '.5rem', border: '1px solid var(--border)' }} />}
               <label className="form-label" style={{ marginTop: '.5rem' }}>Change Image (optional)</label>
               <input type="file" onChange={e => setImage(e.target.files[0])} accept="image/*" />
             </div>

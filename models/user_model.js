@@ -1,28 +1,27 @@
 const mongoose = require('mongoose');
 
 const UserSchema = mongoose.Schema({
-    fullname : String,
-    email : String,
-    password : String,
-    cart : [{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "product",
+    fullname: String,
+    email: String,
+    password: String,
+    cart: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product",
     }],
-    wishlist : [{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "product",
+    wishlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product",
     }],
-    orders : {
-        type : Array,
-        default : []
+    orders: {
+        type: Array,
+        default: []
     },
-    contact : Number,
-    image: Buffer,
-    // Password reset fields
-    resetPasswordToken : String,
-    resetPasswordExpires : Date,
+    contact: Number,
+    image: String,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
 }, {
-    timestamps: true // Optional: adds createdAt and updatedAt
+    timestamps: true
 });
 
 module.exports = mongoose.model("user", UserSchema);

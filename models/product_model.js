@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const ProductSchema = mongoose.Schema({
 
     /* EXISTING FIELDS – DO NOT TOUCHED */
-    image: Buffer,
+    image: String,
     name: String,
     price: Number,
     discount: {
@@ -42,5 +42,11 @@ const ProductSchema = mongoose.Schema({
     },
 
 }, { timestamps: true });
+
+ProductSchema.index({ price: 1 });
+ProductSchema.index({ createdAt: -1 });
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ discount: 1 });
+
 
 module.exports = mongoose.model("product", ProductSchema);

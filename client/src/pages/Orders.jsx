@@ -56,7 +56,7 @@ export default function Orders() {
             <div className="order-items">
               {order.items.map((item, i) => (
                 <div key={i} className="order-item">
-                  <div className="order-item-img">{item.image && <img src={`data:image/jpeg;base64,${item.image}`} alt={item.name} />}</div>
+                  <div className="order-item-img">{item.image && <img src={item.image} alt={item.name} />}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h4 style={{ fontWeight: 600, fontSize: '.9rem' }}>{item.name}</h4>
                     <p style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>Qty: {item.quantity}</p>

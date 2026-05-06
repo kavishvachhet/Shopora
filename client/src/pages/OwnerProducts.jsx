@@ -40,7 +40,7 @@ export default function OwnerProducts() {
               return (
                 <div key={p._id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
                   <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
-                    {p.image && <img src={`data:image/jpeg;base64,${p.image}`} alt={p.name} style={{ maxHeight: '100%', objectFit: 'contain', padding: '1rem' }} />}
+                    {p.image && <img src={p.image} alt={p.name} style={{ maxHeight: '100%', objectFit: 'contain', padding: '1rem' }} />}
                   </div>
                   <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <h3 style={{ fontWeight: 600, marginBottom: '.25rem' }}>{p.name}</h3>

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { uploadToCloudinary } = require("../config/cloudinary");
 const productmodel = require("../models/product_model");
 const usermodel = require("../models/user_model");
 const cartmodel = require("../models/cart_model");
@@ -25,10 +26,10 @@ async function apiAuth(req, res, next) {
   }
   try {
     const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
-    
+
     // First check user model
     let user = await usermodel.findOne({ email: decoded.email }).select("-password");
-      
+
     // If not user, check owner model
     if (!user) {
       user = await ownermodel.findOne({ email: decoded.email }).select("-password");
@@ -39,7 +40,7 @@ async function apiAuth(req, res, next) {
       }
       return res.status(401).json({ error: "User not found" });
     }
-    
+
     req.user = user;
     req.userRole = "user";
     next();
@@ -113,7 +114,7 @@ router.get("/auth/me", apiAuth, async (req, res) => {
       fullname: user.fullname,
       email: user.email,
       contact: user.contact,
-      image: user.image ? user.image.toString("base64") : null,
+      image: user.image || null,
       wishlist: user.wishlist || [],
       role: "user"
     },
@@ -126,12 +127,35 @@ router.get("/auth/me", apiAuth, async (req, res) => {
 router.get("/products", apiAuth, async (req, res) => {
   try {
     const sortby = req.query.sortby;
+    const search = req.query.search || "";
+    
+    // 1. Setup Pagination Variables
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    // 2. Build Filter Query (Search)
+    let filterQuery = {};
+    if (search) {
+      filterQuery = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { brand: { $regex: search, $options: "i" } },
+          { category: { $regex: search, $options: "i" } }
+        ]
+      };
+    }
+
     let sortOption = {};
     if (sortby === "newest") sortOption = { createdAt: -1 };
     else if (sortby === "price-low") sortOption = { price: 1 };
     else if (sortby === "price-high") sortOption = { price: -1 };
 
-    const products = await productmodel.find().sort(sortOption);
+    // 3. Fetch filtered chunk of products, and count the total matching products
+    const products = await productmodel.find(filterQuery).sort(sortOption).skip(skip).limit(limit);
+    const totalProducts = await productmodel.countDocuments(filterQuery);
+    const totalPages = Math.ceil(totalProducts / limit);
+
     const user = await usermodel.findOne({ email: req.user.email });
 
     const mapped = products.map((p) => ({
@@ -148,15 +172,23 @@ router.get("/products", apiAuth, async (req, res) => {
       subcategory: p.subcategory,
       brand: p.brand,
       rating: p.rating,
-      image: p.image ? p.image.toString("base64") : null,
+      image: p.image || null,
       createdAt: p.createdAt,
     }));
 
-    res.json({ products: mapped, wishlist: user.wishlist || [] });
+    // 3. Send back products + pagination metadata
+    res.json({
+      products: mapped,
+      wishlist: user.wishlist || [],
+      currentPage: page,
+      totalPages: totalPages,
+      totalProducts: totalProducts
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 router.get("/products/discounted", apiAuth, async (req, res) => {
   try {
@@ -171,7 +203,7 @@ router.get("/products/discounted", apiAuth, async (req, res) => {
       bgcolor: p.bgcolor,
       panelcolor: p.panelcolor,
       textcolor: p.textcolor,
-      image: p.image ? p.image.toString("base64") : null,
+      image: p.image || null,
       stock: p.stock,
       rating: p.rating,
     }));
@@ -202,7 +234,7 @@ router.get("/products/:id", apiAuth, async (req, res) => {
         subcategory: product.subcategory,
         brand: product.brand,
         rating: product.rating,
-        image: product.image ? product.image.toString("base64") : null,
+        image: product.image || null,
       },
     });
   } catch (err) {
@@ -225,7 +257,7 @@ router.get("/cart", apiAuth, async (req, res) => {
           price: item.productId.price,
           discount: item.productId.discount || 0,
           bgcolor: item.productId.bgcolor,
-          image: item.productId.image ? item.productId.image.toString("base64") : null,
+          image: item.productId.image || null,
           stock: item.productId.stock,
         },
         quantity: item.quantity,
@@ -330,7 +362,7 @@ router.get("/wishlist", apiAuth, async (req, res) => {
       price: p.price,
       discount: p.discount,
       bgcolor: p.bgcolor,
-      image: p.image ? p.image.toString("base64") : null,
+      image: p.image || null,
     }));
     res.json({ items });
   } catch (err) {
@@ -385,7 +417,7 @@ router.get("/checkout", apiAuth, async (req, res) => {
           name: item.productId.name,
           price: item.productId.price,
           discount: item.productId.discount,
-          image: item.productId.image ? item.productId.image.toString("base64") : null,
+          image: item.productId.image || null,
         },
         quantity: item.quantity,
         finalPrice,
@@ -513,7 +545,7 @@ router.get("/orders", apiAuth, async (req, res) => {
         name: i.name,
         price: i.price,
         quantity: i.quantity,
-        image: i.product && i.product.image ? i.product.image.toString("base64") : null,
+        image: i.product && i.product.image ? i.product.image : null,
       })),
       shippingAddress: o.shippingAddress,
       paymentMethod: o.paymentMethod,
@@ -573,7 +605,7 @@ router.get("/account", apiAuth, async (req, res) => {
         fullname: user.fullname,
         email: user.email,
         contact: user.contact,
-        image: user.image ? user.image.toString("base64") : null,
+        image: user.image || null,
       },
     });
   } catch (err) {
@@ -585,9 +617,13 @@ router.post("/account/upload-image", apiAuth, upload.single("image"), async (req
   try {
     const user = await usermodel.findOne({ email: req.user.email });
     if (!req.file) return res.status(400).json({ error: "No file selected" });
-    user.image = req.file.buffer;
+
+    // Upload buffer to Cloudinary and get URL
+    const imageUrl = await uploadToCloudinary(req.file.buffer, 'shopora_users');
+
+    user.image = imageUrl;
     await user.save();
-    res.json({ success: true, image: req.file.buffer.toString("base64") });
+    res.json({ success: true, image: imageUrl });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -699,7 +735,7 @@ router.get("/owner/products", apiAuth, async (req, res) => {
       panelcolor: p.panelcolor,
       textcolor: p.textcolor,
       rating: p.rating,
-      image: p.image ? p.image.toString("base64") : null,
+      image: p.image || null,
       createdAt: p.createdAt,
     }));
     res.json({ products: mapped });
@@ -728,7 +764,7 @@ router.get("/owner/products/:id", apiAuth, async (req, res) => {
         panelcolor: p.panelcolor,
         textcolor: p.textcolor,
         rating: p.rating,
-        image: p.image ? p.image.toString("base64") : null,
+        image: p.image || null,
       },
     });
   } catch (err) {
@@ -741,7 +777,7 @@ router.post("/owner/products/create", apiAuth, upload.single("image"), async (re
   try {
     const { name, price, discount, description, stock, category, subcategory, brand, rating } = req.body;
     let { bgcolor, panelcolor, textcolor } = req.body;
-    
+
     // Provide defaults if not provided to prevent creation failure
     bgcolor = bgcolor || "#faf8f5";
     panelcolor = panelcolor || "#ffffff";
@@ -750,8 +786,13 @@ router.post("/owner/products/create", apiAuth, upload.single("image"), async (re
     if (!req.file || !name || !price)
       return res.status(400).json({ error: "Missing required fields (image, name, price)" });
 
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = await uploadToCloudinary(req.file.buffer, 'shopora_products');
+    }
+
     await productmodel.create({
-      image: req.file.buffer,
+      image: imageUrl,
       name, price, discount, bgcolor, panelcolor, textcolor, description, stock, category, subcategory, brand, rating,
     });
     res.json({ success: true, message: "Product created" });
@@ -786,7 +827,11 @@ router.post("/owner/products/edit/:id", apiAuth, upload.single("image"), async (
       textcolor: req.body.textcolor,
       rating: req.body.rating,
     });
-    if (req.file) product.image = req.file.buffer;
+
+    if (req.file) {
+      const imageUrl = await uploadToCloudinary(req.file.buffer, 'shopora_products');
+      product.image = imageUrl;
+    }
 
     await product.save();
     res.json({ success: true, message: "Product updated" });
