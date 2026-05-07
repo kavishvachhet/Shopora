@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -17,11 +18,19 @@ import OwnerLogin from './pages/OwnerLogin'
 import CreateProduct from './pages/CreateProduct'
 import OwnerProducts from './pages/OwnerProducts'
 import EditProduct from './pages/EditProduct'
+import OwnerDashboard from './pages/OwnerDashboard'
+import OwnerOrders from './pages/OwnerOrders'
+import OwnerCustomers from './pages/OwnerCustomers'
+import OwnerReviews from './pages/OwnerReviews'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="loader"><div className="spinner" /></div>
   return user ? children : <Navigate to="/login" />
+}
+
+function UserPage({ children }) {
+  return <><Navbar />{children}<Footer /></>
 }
 
 export default function App() {
@@ -38,19 +47,23 @@ export default function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/owner/login" element={<OwnerLogin />} />
 
-        {/* Protected (with navbar) */}
-        <Route path="/shop" element={<ProtectedRoute><><Navbar /><Shop /></></ProtectedRoute>} />
-        <Route path="/product/:id" element={<ProtectedRoute><><Navbar /><ProductDetail /></></ProtectedRoute>} />
-        <Route path="/cart" element={<ProtectedRoute><><Navbar /><Cart /></></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute><><Navbar /><Checkout /></></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute><><Navbar /><Orders /></></ProtectedRoute>} />
-        <Route path="/wishlist" element={<ProtectedRoute><><Navbar /><Wishlist /></></ProtectedRoute>} />
-        <Route path="/account" element={<ProtectedRoute><><Navbar /><MyAccount /></></ProtectedRoute>} />
+        {/* Protected (with navbar + footer) */}
+        <Route path="/shop" element={<ProtectedRoute><UserPage><Shop /></UserPage></ProtectedRoute>} />
+        <Route path="/product/:id" element={<ProtectedRoute><UserPage><ProductDetail /></UserPage></ProtectedRoute>} />
+        <Route path="/cart" element={<ProtectedRoute><UserPage><Cart /></UserPage></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><UserPage><Checkout /></UserPage></ProtectedRoute>} />
+        <Route path="/orders" element={<ProtectedRoute><UserPage><Orders /></UserPage></ProtectedRoute>} />
+        <Route path="/wishlist" element={<ProtectedRoute><UserPage><Wishlist /></UserPage></ProtectedRoute>} />
+        <Route path="/account" element={<ProtectedRoute><UserPage><MyAccount /></UserPage></ProtectedRoute>} />
 
         {/* Owner */}
+        <Route path="/owner/dashboard" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
+        <Route path="/owner/orders" element={<ProtectedRoute><OwnerOrders /></ProtectedRoute>} />
         <Route path="/owner/create" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
         <Route path="/owner/products" element={<ProtectedRoute><OwnerProducts /></ProtectedRoute>} />
         <Route path="/owner/products/edit/:id" element={<ProtectedRoute><EditProduct /></ProtectedRoute>} />
+        <Route path="/owner/customers" element={<ProtectedRoute><OwnerCustomers /></ProtectedRoute>} />
+        <Route path="/owner/reviews" element={<ProtectedRoute><OwnerReviews /></ProtectedRoute>} />
       </Routes>
     </>
   )

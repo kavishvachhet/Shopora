@@ -26,11 +26,18 @@ Shopora is engineered to handle massive concurrent traffic, proven by rigorous l
 ## ✨ Key Features
 
 - **Intelligent Search & Filter**: Real-time product searching and multi-attribute filtering (Category, Price, Recency).
-- **Owner Dashboard**: Secure, role-based management for inventory and products (Full CRUD).
-- **Secure Authentication**: Multi-role authentication (Owner/User) with protected HTTP-only cookies.
-- **Razorpay Integration**: Seamless payment processing with server-side cryptographic signature verification.
-- **Order Management**: End-to-end checkout flow with automated email confirmations via Nodemailer.
-- **Wishlist & Cart**: Persistent, synchronized storage for user shopping preferences.
+- **Secure Authentication**: Multi-role authentication (Owner/User) with protected HTTP-only cookies and bcrypt password hashing.
+- **Advanced Owner Admin Panel**:
+  - Full CRUD inventory management.
+  - Comprehensive Order Management with visual timeline tracking and stock auto-restoration.
+  - Customer Management Panel for calculating lifetime value and managing user bans.
+  - Centralized Review Moderation.
+- **Customer Experience**: 
+  - Dynamic Product Reviews and 5-Star Ratings engine.
+  - Robust persistent Wishlist and Cart synchronization.
+  - Content-Based "You Might Also Like" Recommendation Engine.
+  - Deep Account Management (profile editing, password resets).
+- **Checkout & Fulfillment**: Razorpay Integration with server-side cryptographic signature verification and automated transactional emails via Nodemailer.
 
 ## 🏁 Getting Started
 

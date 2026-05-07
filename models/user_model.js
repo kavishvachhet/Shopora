@@ -20,6 +20,10 @@ const UserSchema = mongoose.Schema({
     image: String,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    isBanned: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });

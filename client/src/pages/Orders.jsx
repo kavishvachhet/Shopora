@@ -4,6 +4,8 @@ import api from '../api'
 import toast from 'react-hot-toast'
 import { HiOutlineShoppingBag } from 'react-icons/hi'
 
+const STEPS = ['Placed', 'Processing', 'Shipped', 'Delivered']
+
 export default function Orders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -53,6 +55,25 @@ export default function Orders() {
               <div><p className="order-header-label">Status</p><span className={badgeClass(order.orderStatus)}>{order.orderStatus}</span></div>
               <div style={{ textAlign: 'right' }}><p className="order-header-label">Total</p><p className="order-header-value" style={{ fontWeight: 700, color: 'var(--accent)' }}>₹{order.totalAmount.toLocaleString()}</p></div>
             </div>
+
+            {/* Visual Order Timeline */}
+            {order.orderStatus !== 'Cancelled' && (
+              <div className="order-timeline">
+                {STEPS.map((step, i) => {
+                  const currentIdx = STEPS.indexOf(order.orderStatus)
+                  const isDone = i <= currentIdx
+                  const isCurrent = i === currentIdx
+                  return (
+                    <div key={step} className={`timeline-step ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`}>
+                      <div className="timeline-dot">{isDone ? '✓' : i + 1}</div>
+                      <span className="timeline-label">{step}</span>
+                      {i < STEPS.length - 1 && <div className={`timeline-line ${i < currentIdx ? 'done' : ''}`} />}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
             <div className="order-items">
               {order.items.map((item, i) => (
                 <div key={i} className="order-item">

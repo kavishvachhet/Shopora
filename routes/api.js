@@ -7,6 +7,7 @@ const usermodel = require("../models/user_model");
 const cartmodel = require("../models/cart_model");
 const ownermodel = require("../models/owners_model");
 const Order = require("../models/order");
+const Review = require("../models/review_model");
 const upload = require("../config/multer-config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -44,6 +45,10 @@ async function apiAuth(req, res, next) {
       return res.status(401).json({ error: "User not found" });
     }
 
+    if (user.isBanned) {
+      return res.status(403).json({ error: "Your account has been banned." });
+    }
+
     req.user = user;
     req.userRole = "user";
     next();
@@ -77,6 +82,10 @@ router.post("/auth/login", async (req, res) => {
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ error: "Email or Password Incorrect" });
+
+    if (user.isBanned) {
+      return res.status(403).json({ error: "Your account has been banned. Please contact support." });
+    }
 
     const token = jwt.sign({ email, id: user._id }, process.env.JWT_SECRET);
     res.cookie("token", token, { httpOnly: true });
@@ -895,4 +904,438 @@ router.post("/owner/products/delete/:id", apiAuth, async (req, res) => {
   }
 });
 
+// ========== OWNER ANALYTICS DASHBOARD ==========
+
+// Summary Stats (Total Revenue, Total Orders, Total Products, Total Users)
+router.get("/owner/analytics/summary", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const totalProducts = await productmodel.countDocuments();
+    const totalUsers = await usermodel.countDocuments();
+
+    const orderStats = await Order.aggregate([
+      { $match: { orderStatus: { $ne: "Cancelled" } } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalAmount" },
+          totalOrders: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const stats = orderStats[0] || { totalRevenue: 0, totalOrders: 0 };
+
+    res.json({
+      totalRevenue: stats.totalRevenue,
+      totalOrders: stats.totalOrders,
+      totalProducts,
+      totalUsers,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Revenue Chart (Last 30 days, grouped by day)
+router.get("/owner/analytics/revenue", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const revenueData = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: thirtyDaysAgo },
+          orderStatus: { $ne: "Cancelled" },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" },
+          orders: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Fill in missing days with zero revenue
+    const result = [];
+    const today = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split("T")[0];
+      const found = revenueData.find((d) => d._id === dateStr);
+      result.push({
+        date: dateStr,
+        label: date.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+        revenue: found ? found.revenue : 0,
+        orders: found ? found.orders : 0,
+      });
+    }
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Top 5 Selling Products
+router.get("/owner/analytics/top-sellers", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const topSellers = await Order.aggregate([
+      { $match: { orderStatus: { $ne: "Cancelled" } } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.product",
+          name: { $first: "$items.name" },
+          totalSold: { $sum: "$items.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 5 },
+    ]);
+
+    // Enrich with product image
+    const enriched = await Promise.all(
+      topSellers.map(async (item) => {
+        const product = await productmodel.findById(item._id).select("image");
+        return {
+          ...item,
+          image: product ? product.image : null,
+        };
+      })
+    );
+
+    res.json(enriched);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Recent Orders (Last 10 orders for activity feed)
+router.get("/owner/analytics/recent-orders", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const recentOrders = await Order.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate("user", "fullname email image");
+
+    const formatted = recentOrders.map((order) => ({
+      _id: order._id,
+      userName: order.user ? order.user.fullname : "Unknown User",
+      userEmail: order.user ? order.user.email : "",
+      items: order.items,
+      totalAmount: order.totalAmount,
+      orderStatus: order.orderStatus,
+      paymentMethod: order.paymentMethod,
+      createdAt: order.createdAt,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Low Stock Products (stock < 5)
+router.get("/owner/analytics/low-stock", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const lowStock = await productmodel
+      .find({ stock: { $lt: 5 } })
+      .select("name stock image category price")
+      .sort({ stock: 1 });
+
+    res.json(lowStock);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== OWNER CUSTOMER MANAGEMENT ==========
+
+router.get("/owner/customers", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const customers = await usermodel.find().select("-password").sort({ createdAt: -1 });
+    
+    // We also need to get the total spend and order count for each user
+    const usersData = await Promise.all(customers.map(async (u) => {
+      const orders = await Order.find({ user: u._id, orderStatus: { $ne: "Cancelled" } });
+      const totalSpend = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+      return {
+        _id: u._id,
+        fullname: u.fullname,
+        email: u.email,
+        contact: u.contact,
+        image: u.image,
+        isBanned: u.isBanned,
+        createdAt: u.createdAt,
+        totalOrders: orders.length,
+        totalSpend
+      };
+    }));
+
+    res.json(usersData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/owner/customers/:id/toggle-ban", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const user = await usermodel.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.isBanned = !user.isBanned;
+    await user.save();
+
+    res.json({ success: true, message: user.isBanned ? "User has been banned" : "User has been unbanned", isBanned: user.isBanned });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== OWNER REVIEW MANAGEMENT ==========
+
+router.get("/owner/reviews", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const reviews = await Review.find()
+      .populate("user", "fullname email image")
+      .populate("product", "name image")
+      .sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/owner/reviews/:id", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const review = await Review.findById(req.params.id);
+    if (!review) return res.status(404).json({ error: "Review not found" });
+
+    const productId = review.product;
+    await Review.findByIdAndDelete(req.params.id);
+
+    // Recalculate average rating
+    const reviews = await Review.find({ product: productId });
+    const numReviews = reviews.length;
+    const avgRating = numReviews > 0 ? (reviews.reduce((acc, item) => item.rating + acc, 0) / numReviews).toFixed(1) : 0;
+
+    await productmodel.findByIdAndUpdate(productId, { rating: avgRating, numReviews });
+
+    res.json({ success: true, message: "Review deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== OWNER ORDER MANAGEMENT ==========
+
+// Get All Orders (Owner view)
+router.get("/owner/orders", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const { status, page = 1 } = req.query;
+    const limit = 15;
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (status && status !== "all") filter.orderStatus = status;
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("user", "fullname email"),
+      Order.countDocuments(filter),
+    ]);
+
+    const mapped = orders.map((o) => ({
+      _id: o._id,
+      userName: o.user ? o.user.fullname : "Deleted User",
+      userEmail: o.user ? o.user.email : "",
+      items: o.items,
+      totalAmount: o.totalAmount,
+      orderStatus: o.orderStatus,
+      paymentMethod: o.paymentMethod,
+      paymentStatus: o.paymentStatus,
+      shippingAddress: o.shippingAddress,
+      createdAt: o.createdAt,
+    }));
+
+    res.json({ orders: mapped, total, totalPages: Math.ceil(total / limit) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Order Status (Owner action)
+router.post("/owner/orders/update-status/:orderId", apiAuth, async (req, res) => {
+  if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
+  try {
+    const { status } = req.body;
+    const validStatuses = ["Placed", "Processing", "Shipped", "Delivered", "Cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return res.status(404).json({ error: "Order not found" });
+
+    // Restore stock if cancelling
+    if (status === "Cancelled" && order.orderStatus !== "Cancelled") {
+      for (let item of order.items) {
+        await productmodel.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity },
+        });
+      }
+      if (order.paymentStatus === "Paid") order.paymentStatus = "Refund Pending";
+      order.cancelledAt = new Date();
+    }
+
+    order.orderStatus = status;
+    await order.save();
+
+    res.json({ success: true, message: `Order status updated to ${status}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== RELATED PRODUCTS ==========
+router.get("/products/:id/related", apiAuth, async (req, res) => {
+  try {
+    const product = await productmodel.findById(req.params.id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    const related = await productmodel
+      .find({
+        _id: { $ne: product._id },
+        $or: [
+          { category: product.category },
+          { brand: product.brand },
+        ],
+      })
+      .limit(4)
+      .select("name price discount image category brand");
+
+    res.json(related);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== USER PROFILE & SECURITY ==========
+
+router.post("/account/update", apiAuth, async (req, res) => {
+  try {
+    const { fullname, contact } = req.body;
+    const user = await usermodel.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (fullname) user.fullname = fullname;
+    if (contact) user.contact = contact;
+    
+    await user.save();
+    res.json({ success: true, message: "Profile updated successfully", user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/account/update-password", apiAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await usermodel.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ error: "Incorrect current password" });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+    
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== PRODUCT REVIEWS & RATINGS ==========
+
+router.get("/products/:id/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({ product: req.params.id })
+      .populate("user", "fullname image")
+      .sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/products/:id/reviews", apiAuth, async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const productId = req.params.id;
+    const userId = req.user._id;
+
+    // Check if user has purchased this product
+    const hasPurchased = await Order.findOne({
+      user: userId,
+      "items.product": productId,
+      orderStatus: { $nin: ["Cancelled"] }
+    });
+
+    if (!hasPurchased) {
+      return res.status(403).json({ error: "You can only review products you have purchased." });
+    }
+
+    // Check if user already reviewed
+    const existingReview = await Review.findOne({ user: userId, product: productId });
+    if (existingReview) {
+      return res.status(400).json({ error: "You have already reviewed this product." });
+    }
+
+    // Create the review
+    const review = await Review.create({
+      user: userId,
+      product: productId,
+      rating: Number(rating),
+      comment
+    });
+
+    // Update product average rating
+    const reviews = await Review.find({ product: productId });
+    const numReviews = reviews.length;
+    const avgRating = reviews.reduce((acc, item) => item.rating + acc, 0) / numReviews;
+
+    await productmodel.findByIdAndUpdate(productId, {
+      rating: avgRating.toFixed(1),
+      numReviews
+    });
+
+    res.json({ success: true, message: "Review added successfully", review });
+  } catch (err) {
+    if (err.code === 11000) return res.status(400).json({ error: "You have already reviewed this product." });
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
+

@@ -41,6 +41,11 @@ const ProductSchema = mongoose.Schema({
         default: 0,
     },
 
+    numReviews: {
+        type: Number,
+        default: 0,
+    },
+
 }, { timestamps: true });
 
 ProductSchema.index({ price: 1 });

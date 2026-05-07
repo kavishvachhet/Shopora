@@ -22,8 +22,12 @@ export default function OwnerProducts() {
     <div className="owner-layout">
       <aside className="owner-sidebar">
         <h2 className="owner-sidebar-title">Owner Panel</h2>
-        <Link to="/owner/products" className="active">All Products</Link>
-        <Link to="/owner/create">+ Add New</Link>
+        <Link to="/owner/dashboard">📊 Dashboard</Link>
+        <Link to="/owner/orders">📦 Orders</Link>
+        <Link to="/owner/products" className="active">🏷️ Products</Link>
+        <Link to="/owner/customers">👥 Customers</Link>
+        <Link to="/owner/reviews">⭐ Reviews</Link>
+        <Link to="/owner/create">➕ Add New</Link>
         <div style={{ marginTop: 'auto' }}><Link to="/" style={{ color: '#dc2626', fontSize: '.85rem' }}>Logout</Link></div>
       </aside>
       <main className="owner-main">
