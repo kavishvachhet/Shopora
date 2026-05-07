@@ -69,21 +69,20 @@ Shopora is engineered to handle massive concurrent traffic, proven by rigorous l
    EMAIL_PASS=your_gmail_app_password
    ```
 
-### Running the App (Production/Cluster Mode)
+### Running the App (Production & Docker)
 
-1. **Start Redis Container**:
+Shopora uses **Docker Compose** for a seamless, "one-click" development and production environment. The provided `docker-compose.yml` automatically orchestrates MongoDB, Redis, the Node.js backend (using PM2), and the Vite React frontend.
+
+1. **Start the Entire Enterprise Stack**:
    ```bash
-   docker run -d --name shopora-redis -p 6379:6379 redis
+   docker-compose up --build
    ```
-2. **Start the Backend (PM2 Cluster)**:
-   ```bash
-   pm2 start app.js -i max --name shopora-api
-   ```
-3. **Start the Frontend**:
-   ```bash
-   cd client
-   npm run dev
-   ```
+
+2. **Access the App**:
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:3000`
+
+*(To stop the cluster, press `Ctrl+C` and then run `docker-compose down`)*
 
 ## 💳 Payment Integration
 Shopora is integrated with **Razorpay** for a secure checkout experience.

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. MongoDB Database Container
+  mongodb:
+    image: mongo:latest
+    container_name: shopora-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  # 2. Redis Caching Container
+  redis:
+    image: redis:alpine
+    container_name: shopora-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # 3. Node.js Backend API Container
+  backend:
+    build: .
+    container_name: shopora-backend
+    ports:
+      - "3000:3000"
+    environment:
+      # Tell the backend to look for MongoDB and Redis inside the Docker network
+      - MONGO_DB_URI=mongodb://mongodb:27017/shopora
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env  # Loads your JWT, Razorpay, Cloudinary secrets
+    depends_on:
+      - mongodb
+      - redis
+    restart: always
+
+  # 4. React Vite Frontend Container
+  frontend:
+    build: ./client
+    container_name: shopora-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      # Tell Vite to proxy API requests to the "backend" container
+      - VITE_API_URL=http://backend:3000
+    depends_on:
+      - backend
+    restart: always
+    volumes:
+      # This allows Hot-Reloading so you can still write code without restarting Docker
+      - ./client/src:/app/src
+
+# Create a permanent volume for the database so data isn't lost on restart
+volumes:
+  mongo-data:
