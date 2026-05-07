@@ -20,13 +20,11 @@ const {
 
 
 router.get("/", function (req, res) {
-  if (req.cookies.token) {
-    // user is logged in
-    return res.redirect("/shop");
-  }
-
-  // user is logged out
-  res.render("index");
+  res.json({
+    status: "success",
+    message: "Shopora Backend API is running successfully",
+    frontend_url: "http://localhost:5173"
+  });
 });
 
 

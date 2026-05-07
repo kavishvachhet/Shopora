@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { HiOutlineHeart, HiHeart, HiOutlinePlus } from 'react-icons/hi'
 
 export default function Shop() {
+  console.log("📍 Shop Component Rendered");
   const [products, setProducts] = useState([])
   const [wishlist, setWishlist] = useState([])
   const [sortby, setSortby] = useState('newest')
@@ -19,6 +20,7 @@ export default function Shop() {
   const { fetchUser } = useAuth()
 
   const load = async (sort = sortby, f = filter, s = search, pageNumber = 1, reset = false) => {
+    console.log("🛒 Shop Component: Loading products...");
     if (reset) setLoading(true)
     else setLoadingMore(true)
     

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const redisClient = require("../config/redis_connection");
 const { uploadToCloudinary } = require("../config/cloudinary");
 const productmodel = require("../models/product_model");
 const usermodel = require("../models/user_model");
@@ -21,7 +22,9 @@ const {
 
 // --- AUTH MIDDLEWARE (JSON version) ---
 async function apiAuth(req, res, next) {
+  console.log("🔒 API Auth Check...");
   if (!req.cookies.token) {
+    console.log("❌ No Token Found in Cookies");
     return res.status(401).json({ error: "Not authenticated" });
   }
   try {
@@ -123,18 +126,48 @@ router.get("/auth/me", apiAuth, async (req, res) => {
   });
 });
 
+// Helper to clear product cache
+const clearProductCache = async () => {
+  try {
+    const keys = await redisClient.keys('products_*');
+    if (keys.length > 0) {
+      await redisClient.del(keys);
+    }
+  } catch (err) {
+    // console.log("Failed to clear Redis cache", err);
+  }
+};
+
 // ========== PRODUCTS ==========
 router.get("/products", apiAuth, async (req, res) => {
   try {
     const sortby = req.query.sortby;
     const search = req.query.search || "";
-    
-    // 1. Setup Pagination Variables
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 12;
     const skip = (page - 1) * limit;
 
-    // 2. Build Filter Query (Search)
+    // 1. Create a unique Cache Key
+    const cacheKey = `products_${sortby}_${search}_${page}_${limit}`;
+    console.log(`🔍 Request received for: ${cacheKey}`);
+
+    try {
+      // 2. Check if data is in Redis
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        console.log("⚡ Serving from Redis Cache");
+        const user = await usermodel.findOne({ email: req.user.email });
+        const parsed = JSON.parse(cachedData);
+        // We still need fresh wishlist data for the specific user
+        parsed.wishlist = user.wishlist || [];
+        return res.json(parsed);
+      }
+      console.log("❌ Cache Miss: Fetching from MongoDB");
+    } catch (redisErr) {
+      console.log("Redis Error:", redisErr.message);
+    }
+
+    // 3. Build Filter Query (Search)
     let filterQuery = {};
     if (search) {
       filterQuery = {
@@ -151,7 +184,7 @@ router.get("/products", apiAuth, async (req, res) => {
     else if (sortby === "price-low") sortOption = { price: 1 };
     else if (sortby === "price-high") sortOption = { price: -1 };
 
-    // 3. Fetch filtered chunk of products, and count the total matching products
+    // 4. Fetch filtered chunk from MongoDB
     const products = await productmodel.find(filterQuery).sort(sortOption).skip(skip).limit(limit);
     const totalProducts = await productmodel.countDocuments(filterQuery);
     const totalPages = Math.ceil(totalProducts / limit);
@@ -176,14 +209,22 @@ router.get("/products", apiAuth, async (req, res) => {
       createdAt: p.createdAt,
     }));
 
-    // 3. Send back products + pagination metadata
-    res.json({
+    const response = {
       products: mapped,
       wishlist: user.wishlist || [],
       currentPage: page,
       totalPages: totalPages,
       totalProducts: totalProducts
-    });
+    };
+
+    try {
+      // 5. Save result to Redis for 5 minutes (300 seconds)
+      await redisClient.setEx(cacheKey, 300, JSON.stringify(response));
+    } catch (redisErr) {
+      // Ignore Redis errors
+    }
+
+    res.json(response);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -795,6 +836,8 @@ router.post("/owner/products/create", apiAuth, upload.single("image"), async (re
       image: imageUrl,
       name, price, discount, bgcolor, panelcolor, textcolor, description, stock, category, subcategory, brand, rating,
     });
+    
+    await clearProductCache();
     res.json({ success: true, message: "Product created" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -834,6 +877,7 @@ router.post("/owner/products/edit/:id", apiAuth, upload.single("image"), async (
     }
 
     await product.save();
+    await clearProductCache();
     res.json({ success: true, message: "Product updated" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -844,6 +888,7 @@ router.post("/owner/products/delete/:id", apiAuth, async (req, res) => {
   if (req.userRole !== "owner") return res.status(403).json({ error: "Forbidden" });
   try {
     await productmodel.findByIdAndDelete(req.params.id);
+    await clearProductCache();
     res.json({ success: true, message: "Product deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
