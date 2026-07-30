@@ -14,7 +14,7 @@ Shopora is engineered to handle massive concurrent traffic, proven by rigorous l
 - **Server-Side Pagination & Search**: Efficiently processes thousands of products with cursor-based pagination and debounced regex searching to minimize database and network overhead.
 - **Cloudinary CDN**: Migrated from local disk storage (Multer) to Cloudinary for optimized, lightning-fast image delivery and bandwidth reduction.
 - **Progressive UI/UX**: Custom CSS shimmer skeleton loaders guarantee non-blocking, fluid UI transitions.
-- **Automated CI/CD Pipeline**: 5-stage GitHub Actions workflow with Jest integration tests, Vitest component tests, ESLint quality checks, security auditing, and Docker image publishing on every push.
+- **Automated CI/CD Pipeline**: Parallel GitHub Actions workflow with 88 Jest backend tests, 22 Vitest frontend tests, and production Vite compilation verification on Node 20.
 
 ## 🛠️ Tech Stack
 
