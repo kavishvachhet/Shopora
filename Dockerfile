@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the app using PM2 for production performance
-CMD ["pm2-runtime", "app.js", "-i", "max"]
+CMD ["pm2-runtime", "server.js", "-i", "max"]

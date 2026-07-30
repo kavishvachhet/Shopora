@@ -67,6 +67,4 @@ app.use("/owner", ownerrouter);
 app.use("/users", userrouter);
 app.use("/products", productrouter);
 
-app.listen(3000, () => {
-    console.log("Server is running on port 3000...");
-});
+module.exports = app;

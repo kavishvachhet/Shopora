@@ -1,0 +1,11 @@
+echo "🔍 Running lint checks..."
+npm run lint
+npm run lint:client
+
+echo "🧪 Running backend tests..."
+npm test
+
+echo "🧪 Running frontend tests..."
+cd client && npm test
+
+echo "✅ All checks passed! Pushing..."

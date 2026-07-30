@@ -1,5 +1,7 @@
 # Shopora 🛍️
 
+[![CI/CD Pipeline](https://github.com/kavishvachhet/Shopora/actions/workflows/ci.yml/badge.svg)](https://github.com/kavishvachhet/Shopora/actions/workflows/ci.yml)
+
 Shopora is a premium, enterprise-ready full-stack e-commerce platform. Originally built as a monolithic EJS application, Shopora has been completely re-architected into a modern, decoupled React application backed by a high-performance Express API, Redis caching, and PM2 clustering.
 
 ## 🚀 Enterprise-Grade Performance & Scalability
@@ -12,6 +14,7 @@ Shopora is engineered to handle massive concurrent traffic, proven by rigorous l
 - **Server-Side Pagination & Search**: Efficiently processes thousands of products with cursor-based pagination and debounced regex searching to minimize database and network overhead.
 - **Cloudinary CDN**: Migrated from local disk storage (Multer) to Cloudinary for optimized, lightning-fast image delivery and bandwidth reduction.
 - **Progressive UI/UX**: Custom CSS shimmer skeleton loaders guarantee non-blocking, fluid UI transitions.
+- **Automated CI/CD Pipeline**: 5-stage GitHub Actions workflow with Jest integration tests, Vitest component tests, ESLint quality checks, security auditing, and Docker image publishing on every push.
 
 ## 🛠️ Tech Stack
 
@@ -22,6 +25,7 @@ Shopora is engineered to handle massive concurrent traffic, proven by rigorous l
 - **Image Storage**: [Cloudinary](https://cloudinary.com/)
 - **Authentication**: JWT (JSON Web Tokens), bcrypt
 - **Email Delivery**: Nodemailer (via STARTTLS)
+- **CI/CD & Testing**: [GitHub Actions](https://github.com/features/actions), [Jest](https://jestjs.io/), [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest), [Husky](https://typicode.github.io/husky/)
 
 ## ✨ Key Features
 
@@ -91,10 +95,50 @@ Shopora uses **Docker Compose** for a seamless, "one-click" development and prod
 
 *(To stop the cluster, press `Ctrl+C` and then run `docker-compose down`)*
 
-## 💳 Payment Integration
-Shopora is integrated with **Razorpay** for a secure checkout experience.
-- **Test Mode**: To test payments, use the [Razorpay Test Card details](https://razorpay.com/docs/payments/payments/test-card-details/).
-- **Workflow**: The system creates a unique Razorpay Order, processes the payment on the frontend, and performs a cryptographic signature verification on the backend before finalizing the order.
+## 🧪 Automated Testing & CI/CD
+
+Shopora includes an enterprise-grade automated testing suite and multi-stage CI/CD pipeline.
+
+### Running Tests Locally
+
+```bash
+# Run all backend unit & integration tests (Jest + mongodb-memory-server)
+npm test
+
+# Run backend tests with code coverage report
+npm run test:ci
+
+# Run all React client component tests (Vitest + React Testing Library)
+cd client && npm test
+
+# Run client tests with code coverage report
+cd client && npm run test:ci
+
+# Run full pre-commit verification (lint + tests)
+npm run precommit
+```
+
+### 🔄 CI/CD Pipeline Stages
+
+Every `git push` or `pull_request` to `main` triggers a 5-stage GitHub Actions workflow:
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   STAGE 1    │────▶│   STAGE 2    │────▶│   STAGE 3    │────▶│   STAGE 4    │────▶│   STAGE 5    │
+│  Lint &      │     │  Backend     │     │  Frontend    │     │  Security    │     │  Docker      │
+│  Code Quality│     │  Tests       │     │  Tests+Build │     │  Audit       │     │  Build+Push  │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+1. **Lint & Code Quality**: Validates code style using ESLint across backend and frontend codebases.
+2. **Backend Tests**: Executes 80+ unit and integration test cases using Jest, Supertest, and an in-memory MongoDB server.
+3. **Frontend Tests & Build**: Executes Vitest component tests and verifies production Vite bundle compilation.
+4. **Security Audit**: Scans npm dependencies for high and critical vulnerabilities.
+5. **Docker Build & Push**: Builds and publishes tagged Docker containers to GitHub Container Registry (GHCR).
+
+### 🛡️ Pre-Push Git Hook (Husky)
+
+A local pre-push hook is configured via Husky. Attempting to `git push` broken code will automatically trigger linting and test suites locally, blocking the push if any test fails.
 
 ---
 Built with ❤️ by [Kavish Vachheta](https://github.com/kavishvachhet)
