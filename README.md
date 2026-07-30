@@ -118,27 +118,23 @@ cd client && npm run test:ci
 npm run precommit
 ```
 
-### 🔄 CI/CD Pipeline Stages
+### 🔄 CI Pipeline Stages
 
-Every `git push` or `pull_request` to `main` triggers a 5-stage GitHub Actions workflow:
+Every `git push` or `pull_request` to `main` triggers a high-performance parallel GitHub Actions workflow:
 
 ```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   STAGE 1    │────▶│   STAGE 2    │────▶│   STAGE 3    │────▶│   STAGE 4    │────▶│   STAGE 5    │
-│  Lint &      │     │  Backend     │     │  Frontend    │     │  Security    │     │  Docker      │
-│  Code Quality│     │  Tests       │     │  Tests+Build │     │  Audit       │     │  Build+Push  │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+┌────────────────────────────────┐       ┌────────────────────────────────┐
+│   🧪 1. Backend Tests          │  AND  │   🎨 2. Frontend Tests & Build │
+│   (88 Unit & Integration Tests)│       │   (22 React Tests + Vite Build)│
+└────────────────────────────────┘       └────────────────────────────────┘
 ```
 
-1. **Lint & Code Quality**: Validates code style using ESLint across backend and frontend codebases.
-2. **Backend Tests**: Executes 80+ unit and integration test cases using Jest, Supertest, and an in-memory MongoDB server.
-3. **Frontend Tests & Build**: Executes Vitest component tests and verifies production Vite bundle compilation.
-4. **Security Audit**: Scans npm dependencies for high and critical vulnerabilities.
-5. **Docker Build & Push**: Builds and publishes tagged Docker containers to GitHub Container Registry (GHCR).
+1. **Backend Tests**: Executes 88 unit and integration test cases using Jest, Supertest, and an in-memory MongoDB server (`mongodb-memory-server`) on Node 20.
+2. **Frontend Tests & Build**: Executes 22 Vitest React component tests and verifies production Vite bundle compilation.
 
 ### 🛡️ Pre-Push Git Hook (Husky)
 
 A local pre-push hook is configured via Husky. Attempting to `git push` broken code will automatically trigger linting and test suites locally, blocking the push if any test fails.
 
 ---
-Built with ❤️ by [Kavish Vachheta](https://github.com/kavishvachhet)
+Built by [Kavish Vachheta](https://github.com/kavishvachhet)
