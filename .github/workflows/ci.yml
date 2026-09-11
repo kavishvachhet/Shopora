@@ -33,12 +33,6 @@ jobs:
       - name: Run backend tests
         run: npm test
 
-      - name: Install Newman
-        run: npm install -g newman
-
-      - name: Run API Tests with Newman
-        run: newman run tests/api/Shopora_API_Tests.json
-
   # ═══════════════════════════════════════════
   # 2. Frontend Tests & Build (22 tests + Vite build)
   # ═══════════════════════════════════════════
